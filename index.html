@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;font:14px system-ui,sans-serif;background:#f6f6f6;color-scheme:light dark}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Inspect Robots 控制回路解剖</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F4F6F2;
+    --bg-2: #EAEEE7;
+    --panel: #FFFFFF;
+    --ink: #1B2320;
+    --ink-2: #4A5651;
+    --ink-3: #7E8A84;
+    --rule: #D3DAD4;
+    --model: #2457C5;
+    --model-soft: #DCE6FA;
+    --safety: #C25A1C;
+    --safety-soft: #FBE5D6;
+    --robot: #2E8A73;
+    --robot-soft: #D5EFE6;
+    --code-bg: #1E2623;
+    --code-ink: #E3EAE5;
+    --shadow: 0 1px 2px rgba(20, 30, 25, .06), 0 8px 24px -12px rgba(20, 30, 25, .18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141917; --bg-2: #1B2220; --panel: #1F2724;
+      --ink: #E4EAE5; --ink-2: #AEB9B2; --ink-3: #78857E; --rule: #2E3834;
+      --model: #7FA6FF; --model-soft: #1F2D4A;
+      --safety: #F08A4B; --safety-soft: #45281A;
+      --robot: #5CC7A8; --robot-soft: #173B32;
+      --code-bg: #0F1412; --code-ink: #DDE5DF;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141917; --bg-2: #1B2220; --panel: #1F2724;
+    --ink: #E4EAE5; --ink-2: #AEB9B2; --ink-3: #78857E; --rule: #2E3834;
+    --model: #7FA6FF; --model-soft: #1F2D4A;
+    --safety: #F08A4B; --safety-soft: #45281A;
+    --robot: #5CC7A8; --robot-soft: #173B32;
+    --code-bg: #0F1412; --code-ink: #DDE5DF;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--model); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--model) 40%, transparent); }
+  a:hover { border-bottom-color: var(--model); }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; }
+
+  .page {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 56px;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 32px 96px;
+  }
+  @media (max-width: 860px) {
+    .page { grid-template-columns: 1fr; gap: 24px; padding: 24px 18px 72px; }
+    nav.toc { position: static; }
+  }
+
+  nav.toc { position: sticky; top: 24px; align-self: start; font-size: 13px; line-height: 1.5; }
+  nav.toc .eyebrow { margin-bottom: 10px; }
+  nav.toc ol { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 2px; }
+  nav.toc .phase { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-weight: 600; font-size: 12px; letter-spacing: .08em; color: var(--ink-3); margin: 14px 0 4px; text-transform: uppercase; }
+  nav.toc a { display: block; padding: 4px 10px; border: 0; border-left: 2px solid var(--rule); color: var(--ink-2); }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--ink-3); }
+  nav.toc .legend { display: grid; gap: 6px; color: var(--ink-2); padding-top: 14px; border-top: 1px solid var(--rule); }
+  nav.toc .legend span { display: flex; align-items: center; gap: 8px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .swatch.model { background: var(--model); }
+  .swatch.safety { background: var(--safety); }
+  .swatch.robot { background: var(--robot); }
+
+  main { min-width: 0; }
+  .eyebrow { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  h1 { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: clamp(30px, 4.2vw, 42px); font-weight: 700; line-height: 1.15; letter-spacing: -.01em; margin: 8px 0 16px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--ink-2); max-width: 64ch; margin: 0 0 10px; }
+  .meta { font-size: 13px; color: var(--ink-3); }
+
+  h2 { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: 26px; font-weight: 700; line-height: 1.25; margin: 0 0 6px; text-wrap: balance; }
+  h2 + .sub { color: var(--ink-2); margin: 0 0 22px; max-width: 64ch; }
+  p { max-width: 66ch; margin: 0 0 12px; }
+  ul, ol { max-width: 66ch; padding-left: 1.3em; margin: 0 0 12px; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--ink-3); }
+  strong { font-weight: 700; }
+  code { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: .86em; background: var(--bg-2); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; }
+
+  /* Phases */
+  .phase-block { margin-top: 64px; scroll-margin-top: 24px; }
+  .phase-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+  .phase-head .num { font-family: "Familjen Grotesk", sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .1em; color: var(--ink-3); }
+
+  /* Step timeline */
+  .steps { display: grid; gap: 0; margin-top: 20px; position: relative; }
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 18px;
+    padding: 22px 0 26px;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 24px;
+  }
+  .step:last-child { border-bottom: 1px solid var(--rule); }
+  .step .marker {
+    font-family: "Familjen Grotesk", sans-serif;
+    font-size: 22px; font-weight: 700; line-height: 1;
+    color: var(--ink-3);
+    padding-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .step h3 { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: 19px; font-weight: 700; margin: 0 0 8px; line-height: 1.3; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .step .who { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .who.model { background: var(--model-soft); color: var(--model); }
+  .who.safety { background: var(--safety-soft); color: var(--safety); }
+  .who.robot { background: var(--robot-soft); color: var(--robot); }
+  .who.neutral { background: var(--bg-2); color: var(--ink-2); }
+  .step .why {
+    margin: 12px 0 0;
+    padding: 12px 16px;
+    background: var(--panel);
+    border-left: 3px solid var(--rule);
+    max-width: 66ch;
+    font-size: 15px;
+  }
+  .step .why .eyebrow { margin-bottom: 4px; }
+  .step .why p:last-child { margin-bottom: 0; }
+  .step.model .why { border-left-color: var(--model); }
+  .step.safety .why { border-left-color: var(--safety); }
+  .step.robot .why { border-left-color: var(--robot); }
+
+  details { margin-top: 12px; max-width: 66ch; }
+  summary { cursor: pointer; font-size: 13.5px; color: var(--ink-3); list-style: none; display: inline-flex; align-items: center; gap: 6px; }
+  summary::before { content: "▸"; font-size: 11px; transition: transform .15s ease; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details .body { font-size: 14px; color: var(--ink-2); padding: 8px 0 0 16px; }
+  details .body code { font-size: 12.5px; }
+  a.src { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; white-space: nowrap; border-bottom: 1px dotted color-mix(in srgb, var(--model) 50%, transparent); }
+  a.src::after { content: " ↗"; font-size: 10px; }
+  .srcs { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; }
+  @media (prefers-reduced-motion: reduce) { summary::before { transition: none; } }
+
+  /* Branches */
+  .branches { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+  .branch { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; font-size: 14.5px; }
+  .branch .cond { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .branch .then { color: var(--ink-2); }
+  .branch.model { border-top: 3px solid var(--model); }
+  .branch.safety { border-top: 3px solid var(--safety); }
+  .branch.robot { border-top: 3px solid var(--robot); }
+  .branch.neutral { border-top: 3px solid var(--ink-3); }
+
+  figure { margin: 24px 0 28px; }
+  figure svg { max-width: 100%; height: auto; display: block; }
+  figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 10px; max-width: 70ch; }
+  .fig-wide { overflow-x: auto; }
+
+  .callout { border: 1px solid var(--rule); background: var(--panel); border-radius: 8px; padding: 16px 20px; margin: 20px 0 24px; max-width: 720px; box-shadow: var(--shadow); }
+  .callout .eyebrow { margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .tbl-wrap { overflow-x: auto; margin: 0 0 20px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.55; min-width: 520px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--rule); }
+  th { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; border-bottom: 2px solid var(--rule); }
+  td.num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; font-size: 13px; }
+
+  /* transcript replay */
+  .transcript { display: grid; gap: 8px; margin: 16px 0 8px; max-width: 720px; font-size: 14px; }
+  .turn { display: grid; grid-template-columns: 84px 1fr; gap: 12px; padding: 10px 14px; border-radius: 6px; background: var(--panel); border: 1px solid var(--rule); }
+  .turn .from { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-size: 12px; font-weight: 600; color: var(--ink-3); padding-top: 3px; }
+  .turn.model { border-left: 3px solid var(--model); }
+  .turn.robot { border-left: 3px solid var(--robot); }
+  .turn.safety { border-left: 3px solid var(--safety); }
+  .turn.neutral { border-left: 3px solid var(--ink-3); }
+  @media (max-width: 600px) { .turn { grid-template-columns: 1fr; gap: 4px; } .step { grid-template-columns: 40px 1fr; gap: 12px; } }
+</style>
+</head>
+<body>
+
+<div class="page">
+<nav class="toc" aria-label="目录">
+  <div class="eyebrow">这一页讲什么</div>
+  <ol>
+    <li><a href="#overview">整条链路一眼看完</a></li>
+    <li class="phase">阶段一 · 开始之前</li>
+    <li><a href="#s1">1 找齐三个角色</a></li>
+    <li><a href="#s2">2 模型先了解机器人</a></li>
+    <li><a href="#s3">3 核对两者合不合</a></li>
+    <li><a href="#s4">4 装上安全检查</a></li>
+    <li class="phase">阶段二 · 一个回合</li>
+    <li><a href="#s5">5 机器人复位、第一次观测</a></li>
+    <li><a href="#s6">6 观测翻译成文字和图片</a></li>
+    <li><a href="#s7">7 模型给出一个决定</a></li>
+    <li><a href="#s8">8 决定切成一串小动作</a></li>
+    <li><a href="#s9">9 逐步检查、逐步执行</a></li>
+    <li><a href="#branches">回合里的岔路</a></li>
+    <li class="phase">阶段三 · 结束</li>
+    <li><a href="#s10">10 模型宣布完成或放弃</a></li>
+    <li><a href="#s11">11 评分</a></li>
+    <li><a href="#s12">12 落盘与回看</a></li>
+    <li class="phase">附</li>
+    <li><a href="#robots">支持哪些机器人</a></li>
+    <li><a href="#cost">一次运行花多少</a></li>
+    <li><a href="#glossary">说法对照</a></li>
+  </ol>
+  <div class="legend">
+    <span><i class="swatch model"></i>模型这一侧做的事</span>
+    <span><i class="swatch safety"></i>安全检查做的事</span>
+    <span><i class="swatch robot"></i>机器人这一侧做的事</span>
+  </div>
+</nav>
+
+<main>
+<header>
+  <div class="eyebrow">robocurve/inspect-robots · 截至 2026-09-02 的 main 分支</div>
+  <h1>你敲下一句指令之后，机器人是怎么被一个语言模型驱动的</h1>
+  <p class="lede">按时间顺序讲一次完整运行：先做什么，后做什么，每一步为什么这样设计。不讲接口名，不讲协议格式。需要对照代码的地方折叠在每一步下面。</p>
+  <p class="meta">运行的命令形如 <code>inspect-robots "把叉子放到盘子上" --policy agent</code>。所有源码链接固定指向提交 <a class="src" href="https://github.com/robocurve/inspect-robots/tree/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9">7e4d1b7</a>，行号不会因为上游更新而漂移。</p>
+</header>
+
+<section id="overview" class="phase-block">
+  <h2>整条链路一眼看完</h2>
+  <p class="sub">整个过程是一个循环：机器人交出它看到的，模型决定下一步去哪，框架把这一步切成安全的小动作逐个执行，再回到开头。模型只负责"决定"，走多快、能不能走由框架说了算。</p>
+
+  <figure class="fig-wide">
+    <svg viewBox="0 0 960 300" role="img" aria-label="一个回合的循环：机器人交出观测，框架翻译成文字和图片，模型给出一个决定，框架切成小动作，安全检查逐步放行或裁剪，机器人逐步执行，产出新的观测">
+      <defs>
+        <marker id="a-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--model)"/></marker>
+        <marker id="a-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--safety)"/></marker>
+        <marker id="a-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--robot)"/></marker>
+        <marker id="a-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      </defs>
+      <g font-family="Noto Sans SC, sans-serif" font-size="13" fill="currentColor" stroke="currentColor">
+        <!-- top row -->
+        <rect x="20" y="60" width="170" height="62" rx="6" fill="var(--robot-soft)" stroke="var(--robot)"/>
+        <text x="105" y="86" text-anchor="middle" stroke="none" font-weight="700">① 机器人交出观测</text>
+        <text x="105" y="106" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--ink-2)">关节位置 + 相机画面</text>
+
+        <line x1="190" y1="91" x2="238" y2="91" stroke="var(--robot)" marker-end="url(#a-r)"/>
+
+        <rect x="240" y="60" width="170" height="62" rx="6" fill="var(--panel)" stroke="currentColor"/>
+        <text x="325" y="86" text-anchor="middle" stroke="none" font-weight="700">② 翻译成文字和图片</text>
+        <text x="325" y="106" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--ink-2)">附上"上段被裁了几步"</text>
+
+        <line x1="410" y1="91" x2="458" y2="91" marker-end="url(#a-n)"/>
+
+        <rect x="460" y="60" width="170" height="62" rx="6" fill="var(--model-soft)" stroke="var(--model)"/>
+        <text x="545" y="86" text-anchor="middle" stroke="none" font-weight="700">③ 模型给一个决定</text>
+        <text x="545" y="106" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--ink-2)">"左臂第 2 关节去 0.55"</text>
+
+        <line x1="630" y1="91" x2="678" y2="91" stroke="var(--model)" marker-end="url(#a-m)"/>
+
+        <rect x="680" y="60" width="170" height="62" rx="6" fill="var(--model-soft)" stroke="var(--model)"/>
+        <text x="765" y="86" text-anchor="middle" stroke="none" font-weight="700">④ 切成一串小动作</text>
+        <text x="765" y="106" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--ink-2)">按安全速度分成 23 步</text>
+
+        <!-- down and back -->
+        <path d="M850,91 L900,91 L900,220 L850,220" fill="none" stroke="var(--model)" marker-end="url(#a-m)"/>
+
+        <rect x="680" y="190" width="170" height="62" rx="6" fill="var(--safety-soft)" stroke="var(--safety)"/>
+        <text x="765" y="216" text-anchor="middle" stroke="none" font-weight="700">⑤ 每一步先过安全检查</text>
+        <text x="765" y="236" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--ink-2)">越界裁回 · 太猛限住</text>
+
+        <line x1="680" y1="221" x2="632" y2="221" stroke="var(--safety)" marker-end="url(#a-s)"/>
+
+        <rect x="460" y="190" width="170" height="62" rx="6" fill="var(--robot-soft)" stroke="var(--robot)"/>
+        <text x="545" y="216" text-anchor="middle" stroke="none" font-weight="700">⑥ 机器人执行这一步</text>
+        <text x="545" y="236" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--ink-2)">23 步走完才回到 ①</text>
+
+        <path d="M460,221 L105,221 L105,124" fill="none" stroke="var(--robot)" marker-end="url(#a-r)"/>
+        <text x="280" y="212" text-anchor="middle" stroke="none" font-size="11.5" fill="var(--robot)">新的观测</text>
+
+        <!-- loop between 5 and 6 -->
+        <path d="M545,252 C545,285 765,285 765,252" fill="none" stroke="var(--ink-3)" stroke-dasharray="4 3"/>
+        <text x="655" y="290" text-anchor="middle" stroke="none" font-size="11" fill="var(--ink-3)">⑤⑥ 对 23 步各重复一次</text>
+
+        <!-- side notes -->
+        <text x="20" y="28" stroke="none" font-size="11.5" fill="var(--ink-3)">模型参与的只有 ③。②④ 是框架里的确定性代码，⑤ 不听模型的。</text>
+      </g>
+    </svg>
+    <figcaption>一个回合等于一次模型调用。模型说"去哪"之后，接下来二十几步机器人是自己走完的，走完再问模型。</figcaption>
+  </figure>
+</section>
+
+<!-- ===================== 阶段一 ===================== -->
+<section class="phase-block" id="phase1">
+  <div class="phase-head"><span class="num">阶段一</span><h2>开始之前</h2></div>
+  <p class="sub">这四步在机器人动之前完成，任何一步不通过都不会走到运行阶段。</p>
+
+  <div class="steps">
+    <article class="step neutral" id="s1">
+      <div class="marker">1</div>
+      <div>
+        <h3>找齐三个角色 <span class="who neutral">框架</span></h3>
+        <p>框架读你的配置文件和命令行，确定这次运行的三样东西：用哪个模型来决策、用哪台机器人来执行（真机、仿真器，或者一个不需要任何硬件的练习世界）、任务是什么。任务由一句指令加一个上限组成，上限是最多走多少步或最多跑多少秒。</p>
+        <div class="why">
+          <div class="eyebrow">为什么这样设计</div>
+          <p>三者互相独立。同一句指令可以换不同模型跑，也可以换不同机器人跑，结果才能拿来比较。这一点是整个仓库存在的理由：把语言模型放到和专门训练的机器人模型同样的位置上，在同一个任务上比。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>cli.py</code> 解析命令，<code>registry.py</code> 按名字找到已注册的模型、机器人和任务。任务对象是 <code>Task</code>，一句指令加场景是 <code>Scene</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/registry.py#L136">registry.py:136 resolve()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/task.py#L37">task.py:37 Task</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/scene.py#L33">scene.py:33 Scene</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/eval.py#L245">eval.py:245 eval()</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step model" id="s2">
+      <div class="marker">2</div>
+      <div>
+        <h3>模型先了解机器人 <span class="who model">模型侧</span></h3>
+        <p>模型这一侧向机器人要一份说明：有几个可动的部位，每个叫什么名字，各自能动的范围是多少，有几个相机，有没有作者写的操作提示（比如哪个方向是正、夹爪开合的数值含义）。拿到之后，它当场生成一小套"可以调用的功能"给模型用，通常是三到四个：移动到某个位置、拍一张照、宣布完成、宣布放弃。</p>
+        <p>这套功能是按这台机器人量身生成的。换一台六轴机器人，功能里的部位名字和范围就跟着变；换成用坐标控制的机器人，"移动关节"会变成"移动到某坐标"。</p>
+        <div class="why">
+          <div class="eyebrow">为什么这样设计</div>
+          <p>模型这一侧不写任何机器人专属的知识，所以新机器人接入不需要改模型侧的代码，只需要机器人自己把说明书声明清楚。作者写的操作提示会原样放进给模型的开场说明里，等于把人类工程师对这台机器的经验交给了模型。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>LLMAgentPolicy.bind()</code> 读 <code>EmbodimentInfo</code>，调 <code>build_toolset()</code> 生成工具定义。部位名字来自 <code>ActionSemantics.dim_labels</code>，操作提示来自 <code>EmbodimentInfo.docs</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L755">policy.py:755 bind()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L540">_tools.py:540 build_toolset()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/embodiment.py#L44">embodiment.py:44 EmbodimentInfo</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/spaces.py#L48">spaces.py:48 ActionSemantics</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step neutral" id="s3">
+      <div class="marker">3</div>
+      <div>
+        <h3>核对两者合不合 <span class="who neutral">框架</span></h3>
+        <p>框架核对模型侧和机器人侧对不对得上：模型要输出的数值个数和机器人接受的一样吗？双方对"这个数是绝对位置还是相对位移"的理解一致吗？模型要看的相机机器人真的有吗？任务里如果写的是"最多跑 30 秒"，机器人有没有声明自己的控制频率，好换算成步数？</p>
+        <div class="why">
+          <div class="eyebrow">为什么这样设计</div>
+          <p>这类不匹配在真机上发现代价很高。提前核对，不合就在动机器人之前报错停下。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>compat.py</code> 的 <code>check_compatibility()</code>，不合抛 <code>CompatibilityError</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/compat.py#L139">compat.py:139 check_compatibility()</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step safety" id="s4">
+      <div class="marker">4</div>
+      <div>
+        <h3>装上安全检查 <span class="who safety">安全检查</span></h3>
+        <p>在模型和机器人之间插两道检查，每个动作送到机器人之前都要经过：第一道把超出允许范围的数值裁回边界；第二道限制相邻两步之间的变化量，防止一步跳得太大。机器人插件还可以追加自己的检查，比如提前算一下这个动作会不会让两条手臂撞在一起。</p>
+        <p>这些检查默认开启，关闭需要一个明确的命令行开关。追加的检查只能加在两道默认检查之后，不能替换它们。</p>
+        <div class="why">
+          <div class="eyebrow">为什么这样设计</div>
+          <p>作者的原则是：模型侧的代码可以出错，安全检查的代码不能。所以安全检查放在框架核心里，不依赖模型侧，也不听模型的。模型侧只知道"下面有安全检查"这件事，不知道具体规则，也无法绕过。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>approver.py</code>：<code>ClampApprover</code>（裁边界）、<code>DeltaLimitApprover</code>（限变化量）、<code>ChainApprover</code>（串起来）。机器人追加检查走 <code>contribute_guardrails()</code>。关闭开关是 <code>--disable-guardrails</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/approver.py#L74">approver.py:74 ClampApprover</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/approver.py#L141">approver.py:141 DeltaLimitApprover</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/approver.py#L307">approver.py:307 ChainApprover</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/approver.py#L37">approver.py:37 GuardrailContribution</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/cli.py#L763">cli.py:763 _build_guardrails()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plans/0034-embodiment-contributed-guardrails.md">plan 0034</a>
+          </div></div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== 阶段二 ===================== -->
+<section class="phase-block" id="phase2">
+  <div class="phase-head"><span class="num">阶段二</span><h2>一个回合</h2></div>
+  <p class="sub">第 5 步只在开头做一次。第 6 到 9 步是一个回合，做完回到第 6 步，直到模型宣布结束或步数用完。</p>
+
+  <div class="steps">
+    <article class="step robot" id="s5">
+      <div class="marker">5</div>
+      <div>
+        <h3>机器人复位、交出第一次观测 <span class="who robot">机器人侧</span></h3>
+        <p>机器人回到起始姿态。真机上这一步可能会停下来等操作员按键确认现场安全。然后它交出第一份观测：每个部位现在的位置数值，加上每个相机此刻的画面。</p>
+        <p>同时模型侧开一段新对话。开场说明里有：你在控制哪台机器人、可用的功能有哪些、每次只能给一个动作、每个动作要附一句说明、这次运行最多允许调用你多少次、机器人作者的操作提示、以及上次运行留下的经验（如果有）。接着是一句"目标：把叉子放到盘子上"。</p>
+        <details><summary>对应代码与 prompt 原文</summary><div class="body"><code>embodiment.reset()</code> 复位。<code>LLMAgentPolicy.reset()</code> 拼开场说明，模板在 <code>policy.py</code> 的 <code>_SYSTEM_TEMPLATE</code>，按需看图模式用 <code>_ON_DEMAND_SYSTEM_TEMPLATE</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L115-L130">policy.py:115 开场说明原文</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L132-L152">policy.py:132 按需看图版原文</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L776">policy.py:776 reset() 拼装逻辑</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/embodiment.py#L69">embodiment.py:69 Embodiment.reset()</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step model" id="s6">
+      <div class="marker">6</div>
+      <div>
+        <h3>观测翻译成文字和图片 <span class="who model">模型侧</span></h3>
+        <p>模型看不懂原始数组，所以框架先把观测改写成一条消息。位置数值逐个标上名字写成一行文字，相机画面转成图片附在后面。除此之外还会附上三类补充信息，只要有就写：</p>
+        <ul>
+          <li><strong>上一段动作被安全检查改过几步。</strong>比如"有 3 步因为变化太大被限住了"。这是模型知道自己"要得太猛"的唯一途径。</li>
+          <li><strong>操作员刚才说了什么。</strong>运行过程中人可以在终端打字或者用语音说话，这些话原样放进来，并标明是在第几步说的。</li>
+          <li><strong>上一段动作实际走到了哪。</strong>走了几步、离目标还差多少。这条只在"拍照排队"的情况下出现，见第 7 步。</li>
+        </ul>
+        <div class="transcript">
+          <div class="turn robot"><span class="from">给模型的消息</span><div>当前观测。<br>指令：把叉子放到盘子上<br>位置：left_j0=0.01 left_j1=-0.32 left_j2=0.40 … right_gripper=0.02<br>安全检查：上一段有 3 步被限住。<br>操作员（第 41 步）：夹爪再往左一点<br>相机 front（第 48 步）：[图片] &nbsp; 相机 wrist（第 48 步）：[图片]</div></div>
+        </div>
+        <div class="why">
+          <div class="eyebrow">为什么这样设计</div>
+          <p>名字很重要。模型读到 <code>left_j2=0.40</code>，之后要移动时写的也是 <code>left_j2</code>，两边用同一套名字，模型不需要记"第几个数是什么"。被裁剪的反馈和操作员的话都走观测这条路，是为了让模型下一次决定时能把这些考虑进去，而不是另开一个渠道。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>policy.py</code> 的 <code>_observation_content()</code>，其中 <code>_state_lines()</code> 写位置行，<code>_approvals_line()</code> 写被裁剪信息，<code>_operator_lines()</code> 写操作员的话，<code>_image_parts()</code> 附图片。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L1250">policy.py:1250 _observation_content()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L1187">policy.py:1187 _state_lines()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L1214">policy.py:1214 _approvals_line()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L1233">policy.py:1233 _operator_lines()</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step model" id="s7">
+      <div class="marker">7</div>
+      <div>
+        <h3>模型给出一个决定 <span class="who model">模型侧</span></h3>
+        <p>模型读完消息，回复一个功能调用。绝大多数时候是"移动"：写明要动哪几个部位、各自去到什么数值，再附一句说明，比如"叉子在盘子左边约 5 厘米，先抬高前臂再向右平移"。没写到的部位保持不动。</p>
+        <p>一个回合只接受一个动作。如果模型一次回复里塞了多个动作，只有第一个会执行，其余的会被告知"忽略了，一次只能一个"。</p>
+        <div class="transcript">
+          <div class="turn model"><span class="from">模型回复</span><div>调用 移动关节：left_j2 → 0.55，left_j4 → -0.10<br>说明：叉子在盘子左侧约 5 厘米，前臂抬高一点再向右平移。</div></div>
+        </div>
+        <div class="why">
+          <div class="eyebrow">为什么只能一个</div>
+          <p>模型在决定第一个动作时，并不知道这个动作做完之后画面会变成什么样。第二个动作应该基于做完之后的观测来决定，而不是现在猜。所以一个需要 20 次移动的任务就是至少 20 个回合、至少 20 次模型调用。这个次数受第 5 步说的调用上限约束。</p>
+          <p>那句说明是必填的，缺了会被当作错误退回。它不是给模型自己用的，是给旁边看着的人用的：终端实时打印，报告里也能看到，人可以跟上模型此刻看到什么、为什么这么走。</p>
+        </div>
+        <details><summary>对应代码与工具定义原文</summary><div class="body"><code>act()</code> 里调 <code>client.complete()</code> 请求模型，工具定义来自 <code>Toolset.schemas()</code>。多余的调用返回 <code>ignored: one tool call per turn</code>。说明字段叫 <code>note</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L865">policy.py:865 act()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L136-L274">_tools.py:136 给模型看的工具描述原文</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L1108">policy.py:1108 多余调用被忽略</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step model" id="s8">
+      <div class="marker">8</div>
+      <div>
+        <h3>决定切成一串小动作 <span class="who model">模型侧（确定性代码）</span></h3>
+        <p>模型说的只是"去哪"，没有说"多快"。框架先核对这个决定合不合法：部位名字存在吗，目标在允许范围内吗。合法的话，它按一个预设的安全速度把从当前位置到目标位置的路程等分成若干小步，每一步的变化量都不超过限值。比如路程较长就切成 23 步，每步走一小段。如果切出来超过 10 秒才能走完，会退回给模型说"太远了，拆成两次"。</p>
+        <p>切好的小动作打包成一个整体交给框架，同时告诉模型"将分 23 步执行，约 2.3 秒"。</p>
+        <div class="why">
+          <div class="eyebrow">为什么不让模型定速度</div>
+          <p>早期版本让模型指定"这个动作用几秒完成"。模型经常给得太短，安全检查把每一步限住之后手臂走不到位，但模型收到的回复却说"执行完毕"，要到下一回合看观测才发现。改成框架按固定安全速度切分之后，路程多远就走多久，模型永远不需要考虑速度。</p>
+          <p>切分时用的每步限值故意和第 4 步安全检查的限值对齐，所以正常情况下切出来的小动作不会被安全检查改动。安全检查是兜底，不是常态。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>_tools.py</code> 的 <code>_move_absolute()</code>：算步数、线性插值、每步裁边界，产出 <code>ActionChunk</code>。每步限值在 <code>build_toolset()</code> 里算好，默认每秒走量程的 10%，单步不超过量程的 5%。播放上限 10 秒是 <code>_MAX_DURATION_S</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L375">_tools.py:375 _move() 校验</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L422">_tools.py:422 _move_absolute() 切分</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L476">_tools.py:476 _move_displacement()</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L37-L41">_tools.py:37 速度与上限常量</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plans/0014-agent-speed-limited-playout.md">plan 0014 去掉 duration_s 的决定</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step safety" id="s9">
+      <div class="marker">9</div>
+      <div>
+        <h3>逐步检查、逐步执行 <span class="who safety">安全检查</span> <span class="who robot">机器人侧</span></h3>
+        <p>框架从那一串小动作里每次取一步。先确认数值都是正常数字，再过第 4 步装的安全检查：越界的裁回来，变化太大的限住，机器人自己追加的检查也在这里跑。通过之后送给机器人执行，机器人回一份新观测。然后取下一步，重复。23 步全部走完，这个回合结束，回到第 6 步，用最新的观测再问模型。</p>
+        <p>每一步发生的事都会记录：送出去的数值、有没有被改、机器人回了什么、相机拍到什么。</p>
+        <div class="why">
+          <div class="eyebrow">为什么逐步而不是整段</div>
+          <p>安全检查看的是相邻两步的变化量，必须一步一步看。逐步执行也让"中途出事就停"成为可能：机器人报故障或安全检查发现非法数值，剩下的步不会再送。</p>
+          <p>框架本身不控制节奏。机器人如果需要按固定频率接收动作，由它自己在执行时等待，并声明"我自己控制节拍"。作者原本让框架控节奏，后来发现两个真机适配器都在自己控，框架那份是摆设，就删掉了。</p>
+        </div>
+        <details><summary>对应代码</summary><div class="body"><code>rollout.py</code> 的主循环：<code>controller.next_action()</code> 取一步 → 非有限值检查 → <code>approver.review()</code> → 再检查 → <code>embodiment.step()</code> → <code>sink.log_step()</code>。节奏相关见设计文档 plan 0001 的 R1。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/rollout.py#L325">rollout.py:325 主循环开始</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/rollout.py#L442">rollout.py:442 过安全检查</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/rollout.py#L468">rollout.py:468 机器人执行</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/controller.py#L46">controller.py:46 DefaultController</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plans/0001-foundation-design.md#9-v3-critique-resolutions-binding--overrides-earlier-sections-on-conflict">plan 0001 §9 R1</a>
+          </div></div></details>
+      </div>
+    </article>
+  </div>
+
+  <h2 id="branches" style="margin-top:56px">回合里的岔路</h2>
+  <p class="sub">上面是顺利的情况。下面是每种不顺利时框架怎么处理，颜色表示由谁处理。</p>
+  <div class="branches">
+    <div class="branch model"><div class="cond">模型只回了文字，没给动作</div><div class="then">框架追加一句"请给出一个功能调用"，再问一次。记一次失败。 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L960-L976">policy.py:960</a></div></div>
+    <div class="branch model"><div class="cond">模型调错了</div><div class="then">部位名字写错、目标超范围、缺说明、格式不对，都退回一句具体的错误，比如"没有叫 j9 的部位，可用的是 left_j0、left_j1……"。模型改正后再来，仍在同一回合里。记一次失败。 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L385-L412">_tools.py:385</a></div></div>
+    <div class="branch model"><div class="cond">连续失败三次</div><div class="then">这次尝试判为失败，不再问模型。已经走过的步照样记录，但不参与评分。任何一次成功都会把失败计数清零。 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L60">policy.py:60</a></div></div>
+    <div class="branch model"><div class="cond">模型调用次数用完</div><div class="then">框架不再问模型，直接替它宣布放弃，机器人保持当前姿态停下。 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L1133">policy.py:1133</a></div></div>
+    <div class="branch model"><div class="cond">模型给了多个动作</div><div class="then">执行第一个，其余告知"忽略了"。唯一例外：按需看图模式下，一个移动后面可以跟一个拍照，拍照会等移动做完再拍。</div></div>
+    <div class="branch safety"><div class="cond">动作被裁剪或限住</div><div class="then">照常执行改过的版本，不通知模型，但下一回合的观测里会写"上一段有几步被改"。</div></div>
+    <div class="branch safety"><div class="cond">出现非法数值，或安全检查代码本身崩溃</div><div class="then">整个评测立刻停止，不商量。作者的说法是：检查代码崩了，它就无法再为安全担保。 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/rollout.py#L441-L466">rollout.py:441</a></div></div>
+    <div class="branch robot"><div class="cond">机器人报故障</div><div class="then">整个评测立刻停止。故障中的机器人不会被自动推进到下一个场景。 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/errors.py#L54-L70">errors.py:54</a></div></div>
+    <div class="branch robot"><div class="cond">操作员按下结束键或插话</div><div class="then">按结束键：这次尝试结束，接着进入评分。插话：这句话进下一回合的观测。</div></div>
+    <div class="branch neutral"><div class="cond">步数上限到了</div><div class="then">这次尝试以"超时"结束，进入评分。</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="eyebrow">一个贯穿全程的原则</div>
+    <p>模型能犯的错和机器人承受不了的错分开处理。前者用一句具体的错误文本退回，让模型自己改；后者由安全检查直接裁剪或停止，不给模型商量的机会。两种处理的结果都会写进下一回合的观测里，模型始终知道自己被改了多少、实际走到了哪。</p>
+  </div>
+</section>
+
+<!-- ===================== 阶段三 ===================== -->
+<section class="phase-block" id="phase3">
+  <div class="phase-head"><span class="num">阶段三</span><h2>结束</h2></div>
+  <p class="sub">一次尝试结束的方式有三种：模型宣布、步数用完、操作员或故障中止。之后都进入评分和落盘。</p>
+
+  <div class="steps">
+    <article class="step model" id="s10">
+      <div class="marker">10</div>
+      <div>
+        <h3>模型宣布完成或放弃 <span class="who model">模型侧</span></h3>
+        <p>模型认为目标达成就调用"完成"，认为做不到就调用"放弃"。两者都会让机器人保持当前姿态停下，这次尝试结束。两者都要求模型顺便回答一个问题："你现在知道什么，是你希望一开始就知道的？"要求写具体的、下次能用上的事实，比如相机装在哪个方向、夹爪数值多少算闭合、某个部位的正方向和直觉相反。</p>
+        <div class="why">
+          <div class="eyebrow">为什么问这个</div>
+          <p>模型每次运行都要重新摸索同一台机器的脾气。把摸索出来的东西在结束时收集起来，下次运行时放进开场说明里（第 5 步提到的"上次留下的经验"），就不用从零开始。开场说明里会提前告诉模型"结束时会问你这个"，让它一路留意。</p>
+        </div>
+        <details><summary>对应代码与问题原文</summary><div class="body">工具 <code>done</code> 和 <code>give_up</code>，必填参数 <code>hindsight</code>。答案写进日志的 <code>trial_metadata["hindsight"]</code>，下次用 <code>-P prior_learnings=文件</code> 喂回。设计文档 plan 0047。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L42-L48">_tools.py:42 问模型的那段话原文</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#L326">_tools.py:326 _stop() 停止动作</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#L812">policy.py:812 on_trial_end() 写入日志</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plans/0047-stop-tool-hindsight.md">plan 0047</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step neutral" id="s11">
+      <div class="marker">11</div>
+      <div>
+        <h3>评分 <span class="who neutral">框架</span></h3>
+        <p>成功与否需要有人或有东西来判断。默认由人判：终端弹出提示，操作员回答成功、失败或部分成功，可以附一句备注。另一种是让一个视觉模型判：机器人先把手臂移开让相机看清桌面，框架把开始和结束的两组照片连同评分标准发给视觉模型，要它给出成功或失败。</p>
+        <p>判断的结果记录进这次尝试，真正的打分只是读这个记录。如果机器人自己已经给出了明确结论（比如仿真器知道方块被拿起来了），就不再花模型调用。</p>
+        <div class="why">
+          <div class="eyebrow">为什么判断和打分分开</div>
+          <p>判断只发生一次并被记录下来，打分随时可以从记录重算。这样保存下来的日志就是完整的，之后换一套打分规则不需要重跑机器人。</p>
+        </div>
+        <details><summary>对应代码与评分 prompt</summary><div class="body"><code>grader.py</code>：<code>operator</code>（人判）和 <code>vlm</code>（视觉模型判）。判断结果存在 <code>TrialRecord.operator_judgement</code>，<code>scorer.py</code> 的打分器只读它。视觉模型判之前调机器人的 <code>observe_parked()</code> 让手臂让开。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/grader.py#L129">grader.py:129 视觉模型判分（含发给模型的原文）</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/grader.py#L76">grader.py:76 人判</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/session.py#L678">session.py:678 终端提示</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/scorer.py#L253">scorer.py:253 只读判断结果的打分器</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/eval.py#L63">eval.py:63 判断挂到打分之前</a>
+          </div></div></details>
+      </div>
+    </article>
+
+    <article class="step neutral" id="s12">
+      <div class="marker">12</div>
+      <div>
+        <h3>落盘与回看 <span class="who neutral">框架</span></h3>
+        <p>所有东西写成文件：完整的对话记录、每一步送出的动作、每一步的相机画面、每次模型调用的花费、评分结果、以及这次运行的全部配置。之后可以生成一个网页报告逐回合回看模型看到什么、说了什么、机器人走到哪，也可以在可视化工具里回放整个过程。</p>
+        <p>作者的一条硬规则：只要机器人开始动过，日志就一定会写出来。评分阶段出错也只是把日志标成"有错误"，不会让一夜的数据丢掉。</p>
+        <details><summary>对应代码</summary><div class="body">日志是 <code>EvalLog</code>，对话在 <code>transcripts/</code>，动作在 <code>actions/</code>，画面在 <code>frames/</code>。<code>inspect-robots view</code> 生成网页报告，<code>inspect-robots inspect --transcript</code> 打印对话，Rerun 回放读 <code>.rrd</code>。
+          <div class="srcs">
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/log.py#L131">log.py:131 EvalLog</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/eval.py#L367">eval.py:367 整次运行的编排</a>
+            <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/docs/guide/logging-and-rerun.md">docs: logging-and-rerun</a>
+          </div></div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== 附 ===================== -->
+<section class="phase-block" id="robots">
+  <h2>支持哪些机器人</h2>
+  <p class="sub">核心包只自带一个不需要硬件的练习世界。真机和仿真器都是插件，装上就会出现在 <code>inspect-robots list</code> 里。下表来自上游 README。</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>机器人</th><th>名字</th><th>在哪个包</th><th>控制方式</th><th>同包自带的模型客户端</th></tr></thead>
+    <tbody>
+      <tr><td>练习世界 CubePick，无硬件无 GPU</td><td><code>cubepick</code></td><td>核心包自带</td><td>2 维末端位移</td><td>scripted / random / noop</td></tr>
+      <tr><td>Isaac Lab 仿真（默认 Franka Panda）</td><td><code>isaacsim</code></td><td><a href="https://github.com/robocurve/inspect-robots/tree/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-isaacsim">本仓库 plugins/</a></td><td>关节位置</td><td>—</td></tr>
+      <tr><td>任何 ROS 1 / ROS 2 机械臂</td><td><code>ros</code></td><td><a href="https://github.com/robocurve/inspect-robots/tree/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-ros">本仓库 plugins/</a></td><td>关节位置，维数由你列出的关节决定</td><td>—</td></tr>
+      <tr><td>I2RT YAM 双臂</td><td><code>yam_arms</code></td><td><a href="https://github.com/robocurve/inspect-robots-yam">inspect-robots-yam</a></td><td>14 维关节位置</td><td>molmoact2, gr00t</td></tr>
+      <tr><td>Franka FR3 / Panda</td><td><code>franka</code></td><td><a href="https://github.com/robocurve/inspect-robots-franka">inspect-robots-franka</a></td><td>8 维关节位置</td><td>openpi</td></tr>
+      <tr><td>AgiBot A2 Ultra 双臂</td><td><code>a2_arms</code></td><td><a href="https://github.com/robocurve/inspect-robots-agibot-a2">inspect-robots-agibot-a2</a></td><td>16 维关节位置</td><td>go1, openpi</td></tr>
+      <tr><td>Unitree G1 双臂（站立）</td><td><code>g1_arms</code></td><td><a href="https://github.com/robocurve/inspect-robots-unitree-g1">inspect-robots-unitree-g1</a></td><td>16 维关节位置</td><td>gr00t</td></tr>
+      <tr><td>SO-100 / SO-101</td><td><code>so_arm</code></td><td><a href="https://github.com/robocurve/inspect-robots-so101">inspect-robots-so101</a></td><td>6 维关节位置</td><td>lerobot</td></tr>
+      <tr><td>WidowX 250S（已停产）</td><td><code>widowx</code></td><td><a href="https://github.com/robocurve/inspect-robots-widowx">inspect-robots-widowx</a></td><td>7 维末端位姿增量</td><td>openvla, openpi</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>这一页讲的语言模型策略（<code>agent</code>）对上表里任何一台都能用，因为它在第 2 步按机器人声明的说明现场生成功能。代码即策略（<code>capx</code>）只能用在关节位置控制的机器人上。作者自己的主要测试平台是 YAM 双臂，README 和多份设计文档都以它为例。</p>
+</section>
+
+<section class="phase-block" id="cost">
+  <h2>一次运行花多少</h2>
+  <p class="sub">仓库没有给出每次调用的数字。下面是用假模型在练习世界里实测的，只数文字部分。</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>第几次调用</th><th>固定部分</th><th>对话累积</th><th>合计</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td class="num">780</td><td class="num">54</td><td class="num">834</td></tr>
+      <tr><td class="num">7</td><td class="num">780</td><td class="num">852</td><td class="num">1632</td></tr>
+      <tr><td class="num">13</td><td class="num">780</td><td class="num">1650</td><td class="num">2430</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>固定部分是开场说明加功能定义。对话每回合增加约 130 个 token。图片另算：练习世界的相机只有 32×32，几乎不花钱；真机 640×480 的一张图大约 400 多 token。默认只把最近两条带图的消息发给模型，更早的图片换成一行"此处 2 张图已省略"的文字，所以真机双相机一次调用大约 3 千到 6 千输入 token，一次 30 回合的尝试总共十几万。</p>
+  <p>为什么要省略旧图：曾有一次运行 86 回合累积 264 张图，单次请求 36 MB，被服务端拒绝。省略之后每条消息只改写一次，之前的内容字节不变，还能让服务端缓存命中。</p>
+</section>
+
+<section class="phase-block" id="glossary">
+  <h2>说法对照</h2>
+  <p class="sub">这一页用的普通说法，和仓库代码、文档里的名字对照。之后读代码时用得上。</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>这一页的说法</th><th>仓库里的名字</th><th>在哪</th></tr></thead>
+    <tbody>
+      <tr><td>模型这一侧、决策方</td><td>Policy，LLM 的实现叫 <code>LLMAgentPolicy</code>，注册名 <code>agent</code></td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/policy.py">policy.py</a>，插件 <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent">inspect-robots-agent</a></td></tr>
+      <tr><td>机器人这一侧</td><td>Embodiment</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/embodiment.py">embodiment.py</a>，各机器人插件</td></tr>
+      <tr><td>任务、一句指令、上限</td><td>Task、Scene、<code>max_steps</code> / <code>max_seconds</code></td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/task.py">task.py</a>、<a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/scene.py">scene.py</a></td></tr>
+      <tr><td>可以调用的功能</td><td>tool，由 Toolset 生成</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py">_tools.py</a></td></tr>
+      <tr><td>一次决定切成的一串小动作</td><td>ActionChunk</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/types.py">types.py</a></td></tr>
+      <tr><td>逐步取一步的那个部件</td><td>Controller</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/controller.py">controller.py</a></td></tr>
+      <tr><td>安全检查</td><td>Approver，默认链是 clamp + delta-limit，统称 guardrails</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/approver.py">approver.py</a></td></tr>
+      <tr><td>一个回合</td><td>一次 <code>act()</code> 调用</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py">policy.py</a></td></tr>
+      <tr><td>一次尝试（从复位到结束）</td><td>trial，一次 <code>rollout()</code></td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/rollout.py">rollout.py</a></td></tr>
+      <tr><td>整次运行（多个场景、多次尝试）</td><td>eval，产出 EvalLog</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/eval.py">eval.py</a>、<a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/log.py">log.py</a></td></tr>
+      <tr><td>判断成功与否的人或模型</td><td>Grader（<code>operator</code> / <code>vlm</code>）</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/grader.py">grader.py</a></td></tr>
+      <tr><td>结束时问的"希望早知道什么"</td><td>hindsight</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py">_tools.py</a>，plan 0047</td></tr>
+      <tr><td>动作每步附的那句说明</td><td>note</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py">_tools.py</a></td></tr>
+      <tr><td>省略旧图片</td><td>image eviction，<code>image_horizon</code></td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py">policy.py</a>，plan 0028</td></tr>
+      <tr><td>按需看图、拍照排队</td><td><code>images=on_demand</code>、<code>take_pic</code></td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plans/0027-agent-on-demand-vision.md">plan 0027</a></td></tr>
+      <tr><td>模型调用上限</td><td><code>max_llm_calls</code>，默认 100</td><td><a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py">policy.py</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+</main>
+</div>
+
+</body>
+</html>
