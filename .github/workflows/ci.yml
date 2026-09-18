@@ -223,6 +223,39 @@ jobs:
           uv run --no-sync python -m pytest plugins/inspect-robots-isaacsim/tests -q
           --cov=inspect_robots_isaacsim --cov-report=term-missing --cov-fail-under=0
 
+  # The ARX R5 adapter's suite needs no ARX SDK or CAN link: a fake driver and
+  # fake cameras exercise the declarations, conformance, lifecycle, and an
+  # end-to-end eval() with the LLM agent policy on scripted responses.
+  plugin-arx-r5:
+    name: plugin · arx-r5 (no SDK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock
+      - name: Sync workspace (core + plugins, dev extras)
+        run: uv sync --locked --python 3.11 --all-packages --extra dev
+      - name: Ruff (plugin, lint)
+        run: uv run --no-sync ruff check plugins/inspect-robots-arx-r5
+      - name: Ruff (plugin, format check)
+        run: uv run --no-sync ruff format --check plugins/inspect-robots-arx-r5
+      - name: Mypy (plugin, strict)
+        run: >
+          uv run --no-sync mypy
+          --config-file plugins/inspect-robots-arx-r5/pyproject.toml
+          plugins/inspect-robots-arx-r5/src/inspect_robots_arx_r5
+      - name: Pytest (plugin, with coverage)
+        run: >
+          uv run --no-sync python -m pytest plugins/inspect-robots-arx-r5/tests -q
+          --cov=inspect_robots_arx_r5 --cov-report=term-missing --cov-fail-under=0
+
   # The XPolicyLab adapter's suite needs no XPolicyLab checkout: an in-process
   # stub server speaks the real wire protocol, covering codec/client behavior,
   # observation/action mapping, lifecycle, registry discovery, and compatibility.
@@ -440,7 +473,7 @@ jobs:
   ci-ok:
     name: ci-ok
     if: ${{ always() }}
-    needs: [quality, docs-build, test, test-rerun, test-extra, core-only-import, plugin-isaacsim, plugin-xpolicylab, plugin-voice, plugin-ros, plugin-agent, plugin-capx, repo-hygiene]
+    needs: [quality, docs-build, test, test-rerun, test-extra, core-only-import, plugin-isaacsim, plugin-xpolicylab, plugin-voice, plugin-ros, plugin-agent, plugin-capx, plugin-arx-r5, repo-hygiene]
     runs-on: ubuntu-latest
     steps:
       - name: Fail unless every needed job succeeded
@@ -453,7 +486,7 @@ jobs:
   alert-red-main:
     name: alert on red main
     if: ${{ failure() && github.event_name == 'push' }}
-    needs: [quality, docs-build, test, test-rerun, test-extra, core-only-import, plugin-isaacsim, plugin-xpolicylab, plugin-voice, plugin-ros, plugin-agent, plugin-capx]
+    needs: [quality, docs-build, test, test-rerun, test-extra, core-only-import, plugin-isaacsim, plugin-xpolicylab, plugin-voice, plugin-ros, plugin-agent, plugin-capx, plugin-arx-r5]
     runs-on: ubuntu-latest
     permissions:
       issues: write

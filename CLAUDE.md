@@ -41,7 +41,10 @@ rollout, scores it, and writes an immutable `EvalLog`. Mirrors Inspect AI's
   HTTP servers; registered as `capx`), and
   `plugins/inspect-robots-voice/` (local microphone transcription with Parakeet and
   local Kokoro policy narration; registered as the `voice` operator input and
-  `speaker` sink).
+  `speaker` sink), and
+  `plugins/inspect-robots-arx-r5/` (ARX R5 single/dual-arm embodiment over the
+  official ARX_R5_python CAN SDK, imported lazily from `sdk_path`; registered as
+  `arx_r5`).
 
 ## Working here
 
