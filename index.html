@@ -215,6 +215,7 @@
   @media (max-width: 600px) { .turn { grid-template-columns: 1fr; gap: 4px; } .step { grid-template-columns: 40px 1fr; gap: 12px; } }
 
 </style>
+<link rel="stylesheet" href="assets/r5-case.css">
 </head>
 <body>
 
@@ -239,6 +240,9 @@
     <li><a href="#s10">10 模型宣布完成或放弃</a></li>
     <li><a href="#s11">11 评分</a></li>
     <li><a href="#s12">12 落盘与回看</a></li>
+    <li class="phase">实机实例</li>
+    <li><a href="#r5-case">R5：木块入盘</a></li>
+    <li><a href="#r5-observations">41 组观察图与动作</a></li>
     <li class="phase">附</li>
     <li><a href="#robots">支持哪些机器人</a></li>
     <li><a href="#cost">一次运行花多少</a></li>
@@ -257,6 +261,7 @@
   <h1>你敲下一句指令之后，机器人是怎么被一个语言模型驱动的</h1>
   <p class="lede">按时间顺序讲一次完整运行：先做什么，后做什么，每一步为什么这样设计。不讲接口名，不讲协议格式。需要对照代码的地方折叠在每一步下面。</p>
   <p class="meta">运行的命令形如 <code>inspect-robots "把叉子放到盘子上" --policy agent</code>。所有源码链接固定指向提交 <a class="src" href="https://github.com/robocurve/inspect-robots/tree/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9">7e4d1b7</a>，行号不会因为上游更新而漂移。</p>
+  <div class="case-entry"><a href="#r5-case" tabindex="-1" aria-hidden="true"><img src="cases/r5-cube/images/final.webp" width="112" height="84" alt=""></a><div><a href="#r5-case">看一个完整的 R5 真机实例 →</a><p>木块入盘 · 41 组双路观察 · 动作回放 · 逐步对照这条回路</p></div></div>
 </header>
 
 <section id="overview" class="phase-block">
@@ -333,6 +338,7 @@
       <div class="marker">1</div>
       <div>
         <h3>找齐三个角色 <span class="who neutral">框架</span></h3>
+        <div class="r5-inline"><a href="#r5-mapping">R5 实例：Codex 会话决策、左从臂执行，任务是木块入盘。 →</a></div>
         <p>框架读你的配置文件和命令行，确定这次运行的三样东西：用哪个模型来决策、用哪台机器人来执行（真机、仿真器，或者一个不需要任何硬件的练习世界）、任务是什么。任务由一句指令加一个上限组成，上限是最多走多少步或最多跑多少秒。</p>
         <div class="why">
           <div class="eyebrow">为什么这样设计</div>
@@ -352,6 +358,7 @@
       <div class="marker">2</div>
       <div>
         <h3>模型先了解机器人 <span class="who model">模型侧</span></h3>
+        <div class="r5-inline"><a href="#r5-mapping">R5 实例：7 维动作、两路相机，夹爪原始 0–5 映射到 0–1。 →</a></div>
         <p>模型这一侧向机器人要一份说明：有几个可动的部位，每个叫什么名字，各自能动的范围是多少，有几个相机，有没有作者写的操作提示（比如哪个方向是正、夹爪开合的数值含义）。拿到之后，它当场生成一小套"可以调用的功能"给模型用，通常是三到四个：移动到某个位置、拍一张照、宣布完成、宣布放弃。</p>
         <p>这套功能是按这台机器人量身生成的。换一台六轴机器人，功能里的部位名字和范围就跟着变；换成用坐标控制的机器人，"移动关节"会变成"移动到某坐标"。</p>
         <div class="why">
@@ -372,6 +379,7 @@
       <div class="marker">3</div>
       <div>
         <h3>核对两者合不合 <span class="who neutral">框架</span></h3>
+        <div class="r5-inline"><a href="#r5-mapping">R5 实例：先核对单臂维度与接口，原生相机分辨率也在启动前验证。 →</a></div>
         <p>框架核对模型侧和机器人侧对不对得上：模型要输出的数值个数和机器人接受的一样吗？双方对"这个数是绝对位置还是相对位移"的理解一致吗？模型要看的相机机器人真的有吗？任务里如果写的是"最多跑 30 秒"，机器人有没有声明自己的控制频率，好换算成步数？</p>
         <div class="why">
           <div class="eyebrow">为什么这样设计</div>
@@ -388,6 +396,7 @@
       <div class="marker">4</div>
       <div>
         <h3>装上安全检查 <span class="who safety">安全检查</span></h3>
+        <div class="r5-inline"><a href="#r5-mapping">R5 实例：框架边界与变化量限制，加本机桌面间隙和实测偏差检查。 →</a></div>
         <p>在模型和机器人之间插两道检查，每个动作送到机器人之前都要经过：第一道把超出允许范围的数值裁回边界；第二道限制相邻两步之间的变化量，防止一步跳得太大。机器人插件还可以追加自己的检查，比如提前算一下这个动作会不会让两条手臂撞在一起。</p>
         <p>这些检查默认开启，关闭需要一个明确的命令行开关。追加的检查只能加在两道默认检查之后，不能替换它们。</p>
         <div class="why">
@@ -418,6 +427,7 @@
       <div class="marker">5</div>
       <div>
         <h3>机器人复位、交出第一次观测 <span class="who robot">机器人侧</span></h3>
+        <div class="r5-inline"><a href="#r5-obs-1">R5 实例：这里的 reset 只读取折叠位，第一条动作由会话单独决定。 →</a></div>
         <p>机器人回到起始姿态。真机上这一步可能会停下来等操作员按键确认现场安全。然后它交出第一份观测：每个部位现在的位置数值，加上每个相机此刻的画面。</p>
         <p>同时模型侧开一段新对话。开场说明里有：你在控制哪台机器人、可用的功能有哪些、每次只能给一个动作、每个动作要附一句说明、这次运行最多允许调用你多少次、机器人作者的操作提示、以及上次运行留下的经验（如果有）。接着是一句"目标：把叉子放到盘子上"。</p>
         <details><summary>对应代码与 prompt 原文</summary><div class="body"><code>embodiment.reset()</code> 复位。<code>LLMAgentPolicy.reset()</code> 拼开场说明，模板在 <code>policy.py</code> 的 <code>_SYSTEM_TEMPLATE</code>，按需看图模式用 <code>_ON_DEMAND_SYSTEM_TEMPLATE</code>。
@@ -434,6 +444,7 @@
       <div class="marker">6</div>
       <div>
         <h3>观测翻译成文字和图片 <span class="who model">模型侧</span></h3>
+        <div class="r5-inline"><a href="#r5-obs-7">R5 实例：查看一次真实的固定相机、腕部相机和关节读回。 →</a></div>
         <p>模型看不懂原始数组，所以框架先把观测改写成一条消息。位置数值逐个标上名字写成一行文字，相机画面转成图片附在后面。除此之外还会附上三类补充信息，只要有就写：</p>
         <ul>
           <li><strong>上一段动作被安全检查改过几步。</strong>比如"有 3 步因为变化太大被限住了"。这是模型知道自己"要得太猛"的唯一途径。</li>
@@ -461,6 +472,7 @@
       <div class="marker">7</div>
       <div>
         <h3>模型给出一个决定 <span class="who model">模型侧</span></h3>
+        <div class="r5-inline"><a href="#r5-obs-20">R5 实例：闭爪后先抬 2 cm 验握，动作说明与后续画面一起保留。 →</a></div>
         <p>模型读完消息，回复一个功能调用。绝大多数时候是"移动"：写明要动哪几个部位、各自去到什么数值，再附一句说明，比如"叉子在盘子左边约 5 厘米，先抬高前臂再向右平移"。没写到的部位保持不动。</p>
         <p>一个回合只接受一个动作。如果模型一次回复里塞了多个动作，只有第一个会执行，其余的会被告知"忽略了，一次只能一个"。</p>
         <div class="transcript">
@@ -484,6 +496,7 @@
       <div class="marker">8</div>
       <div>
         <h3>决定切成一串小动作 <span class="who model">模型侧（确定性代码）</span></h3>
+        <div class="r5-inline"><a href="#r5-obs-20">R5 实例：这条短距离抬升指令被切成 21 个控制小步。 →</a></div>
         <p>模型说的只是"去哪"，没有说"多快"。框架先核对这个决定合不合法：部位名字存在吗，目标在允许范围内吗。合法的话，它按一个预设的安全速度把从当前位置到目标位置的路程等分成若干小步，每一步的变化量都不超过限值。比如路程较长就切成 23 步，每步走一小段。如果切出来超过 10 秒才能走完，会退回给模型说"太远了，拆成两次"。</p>
         <p>切好的小动作打包成一个整体交给框架，同时告诉模型"将分 23 步执行，约 2.3 秒"。</p>
         <div class="why">
@@ -506,6 +519,7 @@
       <div class="marker">9</div>
       <div>
         <h3>逐步检查、逐步执行 <span class="who safety">安全检查</span> <span class="who robot">机器人侧</span></h3>
+        <div class="r5-inline"><a href="#r5-obs-21">R5 实例：动作完成后，检查木块是否仍在指间，以及目标和读回的偏差。 →</a></div>
         <p>框架从那一串小动作里每次取一步。先确认数值都是正常数字，再过第 4 步装的安全检查：越界的裁回来，变化太大的限住，机器人自己追加的检查也在这里跑。通过之后送给机器人执行，机器人回一份新观测。然后取下一步，重复。23 步全部走完，这个回合结束，回到第 6 步，用最新的观测再问模型。</p>
         <p>每一步发生的事都会记录：送出去的数值、有没有被改、机器人回了什么、相机拍到什么。</p>
         <div class="why">
@@ -556,6 +570,7 @@
       <div class="marker">10</div>
       <div>
         <h3>模型宣布完成或放弃 <span class="who model">模型侧</span></h3>
+        <div class="r5-inline"><a href="#r5-obs-41">R5 实例：先检查放置结果并回到折叠位，再发 done 结束。 →</a></div>
         <p>模型认为目标达成就调用"完成"，认为做不到就调用"放弃"。两者都会让机器人保持当前姿态停下，这次尝试结束。两者都要求模型顺便回答一个问题："你现在知道什么，是你希望一开始就知道的？"要求写具体的、下次能用上的事实，比如相机装在哪个方向、夹爪数值多少算闭合、某个部位的正方向和直觉相反。</p>
         <div class="why">
           <div class="eyebrow">为什么问这个</div>
@@ -575,6 +590,7 @@
       <div class="marker">11</div>
       <div>
         <h3>评分 <span class="who neutral">框架</span></h3>
+        <div class="r5-inline"><a href="#r5-result">R5 实例：实物成功来自图像核验，框架正常结束和任务成功分开记录。 →</a></div>
         <p>成功与否需要有人或有东西来判断。默认由人判：终端弹出提示，操作员回答成功、失败或部分成功，可以附一句备注。另一种是让一个视觉模型判：机器人先把手臂移开让相机看清桌面，框架把开始和结束的两组照片连同评分标准发给视觉模型，要它给出成功或失败。</p>
         <p>判断的结果记录进这次尝试，真正的打分只是读这个记录。如果机器人自己已经给出了明确结论（比如仿真器知道方块被拿起来了），就不再花模型调用。</p>
         <div class="why">
@@ -596,6 +612,7 @@
       <div class="marker">12</div>
       <div>
         <h3>落盘与回看 <span class="who neutral">框架</span></h3>
+        <div class="r5-inline"><a href="#r5-observations">R5 实例：41 组双路观测都能查看，还保留了额外深度检查和动作数据。 →</a></div>
         <p>所有东西写成文件：完整的对话记录、每一步送出的动作、每一步的相机画面、每次模型调用的花费、评分结果、以及这次运行的全部配置。之后可以生成一个网页报告逐回合回看模型看到什么、说了什么、机器人走到哪，也可以在可视化工具里回放整个过程。</p>
         <p>作者的一条硬规则：只要机器人开始动过，日志就一定会写出来。评分阶段出错也只是把日志标成"有错误"，不会让一夜的数据丢掉。</p>
         <details><summary>对应代码</summary><div class="body">日志是 <code>EvalLog</code>，对话在 <code>transcripts/</code>，动作在 <code>actions/</code>，画面在 <code>frames/</code>。<code>inspect-robots view</code> 生成网页报告，<code>inspect-robots inspect --transcript</code> 打印对话，Rerun 回放读 <code>.rrd</code>。
@@ -607,6 +624,104 @@
       </div>
     </article>
   </div>
+</section>
+
+<!-- ===================== R5 实机实例 ===================== -->
+<section class="phase-block r5-case" id="r5-case" aria-labelledby="r5-title">
+  <div class="eyebrow">2026-09-19 · 一次真实运行</div>
+  <h2 id="r5-title">把这条回路放到 R5 上：木块入盘</h2>
+  <p class="sub">从盘外的木块，到松爪后留在盘中的木块。逐次看两路画面，再对照“观察 → 决定 → 切成小步 → 执行”的过程。</p>
+  <span class="r5-status">实物结果已通过双路图像核验</span>
+  <dl class="r5-metrics">
+    <div><dt>实际抓取</dt><dd>1 次完成</dd></div>
+    <div><dt>双路策略观测</dt><dd>41 组</dd></div>
+    <div><dt>机器人实际执行</dt><dd>1,553 步</dd></div>
+    <div><dt>含观察与决策等待</dt><dd>13 分 52 秒</dd></div>
+  </dl>
+
+  <h3 id="r5-mapping">对照前文的 12 步</h3>
+  <div class="r5-mapping">
+    <div><div class="r5-map-label"><a href="#s1">步骤 1–4</a> · 开始之前</div>
+      <p>任务是“木块入盘”，执行者是 <code>can1</code> 上的 R5 左从臂，决策者是当前 Codex 会话。六关节加夹爪共 7 维，固定相机与腕部相机提供画面。核对接口后，启用框架的边界与变化量限制，并补充本机的桌面间隙和实测偏差检查。</p></div>
+    <div><div class="r5-map-label"><a href="#s5">步骤 5–9</a> · 观察、决定、执行</div>
+      <p>本次启动先读取折叠位，不自动运动。每次观测写入文件信箱，Codex 看图后给出一条带说明的指令；本地策略将目标插值成小步，经 <code>eval → controller → approver → arx_r5</code> 执行。下面的每一组图片，对应一次进入策略的观测。</p></div>
+    <div><div class="r5-map-label"><a href="#s10">步骤 10–12</a> · 核验、结束、回看</div>
+      <p>先抬起验握，再搬运、低位松爪，撤离后再次确认木块在盘内。返回折叠位也由显式指令逐段完成，随后 <code>done</code> 结束并释放 SDK。原日志只启用了步数统计；这里的“放置成功”来自双路图像核验。</p></div>
+  </div>
+  <details class="r5-wide-details"><summary>本次接入与前文通用 agent 示例有什么不同？</summary>
+    <div class="body">
+      <p>前文介绍通过模型 API 发起调用的 <code>LLMAgentPolicy</code>。本次复用已有的本地文件信箱策略，注册名沿用 <code>claude</code>，实际决策者是 Codex；没有再调用独立模型 API。41 组观测不能换算成 41 次 API 调用，也没有对应的 token 或费用记录。</p>
+      <p>为这台真机另加了运行入口：启动只观察，每次 SDK 下发前核对目标与读回，结束时不从任意姿态自动折叠。框架核心、动作审批和 R5 SDK 仍沿用仓库流程。这是本机桌面几何检查，不是整臂碰撞模型；本页是执行记录，图片按钮只浏览资料，不控制硬件。</p>
+    </div>
+  </details>
+
+  <h3 id="r5-replay">先看完整动作</h3>
+  <div class="r5-video-shell">
+    <video id="r5-video" controls playsinline preload="metadata" poster="cases/r5-cube/images/01-fixed.webp" aria-label="R5 木块入盘动作回放，固定相机">
+      <source src="cases/r5-cube/fixed.mp4" type="video/mp4">
+      浏览器不支持视频，可<a href="cases/r5-cube/fixed.mp4">下载固定相机回放</a>。
+    </video>
+  </div>
+  <div class="r5-toolbar">
+    <button type="button" data-r5-camera="fixed" aria-pressed="true">固定相机</button>
+    <button type="button" data-r5-camera="wrist" aria-pressed="false">腕部相机</button>
+    <label>回放速度 <select id="r5-speed" aria-label="回放速度"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+    <label class="r5-follow"><input type="checkbox" id="r5-follow" checked>播放时联动下方观测</label>
+  </div>
+  <p class="r5-note">回放约 77.75 秒，由保存帧按 20 fps 合成，省略了看图和等待期间的墙钟时间；“1×”是文件播放速度，不代表机械臂现场实时速度。原图保持 640 × 480 像素。</p>
+
+  <h3 id="r5-observations">每一次观察，和随后的一条决定</h3>
+  <p class="r5-note">全部 41 组、82 张相机图。点击图片可放大；拖动序号或选择阶段，查看同一时刻的两路画面。文字阅读提示根据运行记录整理，原始动作说明可以展开。</p>
+  <noscript><p class="r5-error">逐次观测浏览需要 JavaScript。你仍可播放视频、查看下方最终照片，或下载<a href="cases/r5-cube/data.json">全部观测索引与记录</a>。</p></noscript>
+  <p id="r5-load-status" class="r5-note" role="status">正在加载观测索引…</p>
+  <div id="r5-browser" hidden>
+    <div id="r5-stages" class="r5-stage-jumps" role="group" aria-label="按任务阶段跳转"></div>
+    <div class="r5-observer">
+      <div class="r5-observer-heading"><h4 id="r5-observation-title"></h4><span class="r5-counter" id="r5-counter" aria-live="polite"></span></div>
+      <div class="r5-meta" id="r5-observation-meta"></div>
+      <div class="r5-navigation">
+        <button type="button" id="r5-prev" aria-label="上一组观测">← 上一组</button>
+        <input id="r5-range" type="range" min="1" max="41" step="1" value="1" aria-label="选择观测序号">
+        <button type="button" id="r5-next" aria-label="下一组观测">下一组 →</button>
+      </div>
+      <div class="r5-cameras">
+        <figure><button type="button" class="r5-image-button" id="r5-fixed-open" aria-label="放大固定相机观察图"><img id="r5-fixed-image" width="640" height="480" alt="固定相机观察图"></button><figcaption><span>固定相机 · 工作台</span><span>点击放大</span></figcaption></figure>
+        <figure><button type="button" class="r5-image-button" id="r5-wrist-open" aria-label="放大腕部相机观察图"><img id="r5-wrist-image" width="640" height="480" alt="腕部相机观察图"></button><figcaption><span>腕部相机 · 夹爪前方</span><span>点击放大</span></figcaption></figure>
+      </div>
+      <div class="r5-flow" aria-label="对应前文的流程步骤"><a href="#s6">6 · 当前观察</a><a href="#s7">7 · 下一条决定</a><a href="#s8">8–9 · 切步与执行</a><a href="#s6">回到观察</a></div>
+      <div class="r5-decision"><div class="eyebrow">阅读提示 · 根据本次记录整理</div><p id="r5-explanation"></p></div>
+      <div class="r5-execution">
+        <div><small>下一条指令</small><span id="r5-command-kind"></span></div>
+        <div><small>切分与配置节拍折算</small><span id="r5-chunk"></span></div>
+        <div><small>上一条目标的关节读回差</small><span id="r5-residual"></span></div>
+      </div>
+      <p class="r5-note" id="r5-after-summary"></p>
+      <div class="r5-toolbar"><button type="button" id="r5-after">看执行后的观测 →</button><button type="button" id="r5-seek">在上方回放中定位</button></div>
+      <details class="r5-wide-details"><summary>下一条动作说明原文与目标数值</summary><pre class="r5-raw-note" id="r5-command-record"></pre></details>
+      <details class="r5-wide-details"><summary>对比本次读回、下一条目标和下一次读回</summary>
+        <p class="r5-note">关节为弧度；夹爪为归一化开度（0 闭合、1 张开）。只列指令明确指定的目标；“保持”沿用上一条目标。“下一次读回”不是到位保证。</p>
+        <div class="tbl-wrap"><table class="r5-state-table"><thead><tr><th>部位</th><th>本次读回</th><th>下一条目标</th><th>下一次读回</th></tr></thead><tbody id="r5-state-rows"></tbody></table></div>
+      </details>
+      <details class="r5-wide-details" id="r5-depth" hidden><summary>这次还有额外的腕部深度核验</summary>
+        <div class="r5-depth-content"><button type="button" class="r5-image-button" id="r5-depth-open" aria-label="放大深度核验图"><img id="r5-depth-image" width="640" height="480" alt="腕部深度，颜色表示光轴距离"></button><div><p class="r5-note">姿态保持期间单独采集。伪彩色表示相机光轴距离；黑色为无效深度。不是每一次策略观测都带深度。</p><div class="r5-depth-scale" aria-hidden="true"></div><div class="r5-depth-labels"><span>近 · 5 cm</span><span>20 cm</span><span>远 · 35 cm</span></div><p class="r5-note" id="r5-depth-info"></p></div></div>
+      </details>
+    </div>
+    <details class="r5-wide-details r5-all" open><summary>全部 41 组观测缩略图</summary><div id="r5-thumbnails" class="r5-thumbnails" role="group" aria-label="全部观测，点击选择同一时刻的两路画面"></div></details>
+  </div>
+
+  <h3 id="r5-result">最后，实物结果是什么？</h3>
+  <div class="r5-final">
+    <figure><a href="cases/r5-cube/images/final.webp" target="_blank" rel="noopener"><img src="cases/r5-cube/images/final.webp" width="640" height="480" loading="lazy" alt="SDK 释放后再次拍摄：木块完整地放在蓝色盘子中央，机械臂已经撤离"></a><figcaption>控制程序退出后再次拍摄的固定相机画面。</figcaption></figure>
+    <div><p>木块从盘外被夹起，搬运后释放在盘内。<a href="#r5-obs-33">观察 33</a> 显示松爪后的结果；<a href="#r5-obs-37">观察 37</a> 显示空夹爪撤离后，木块仍在盘中。最后从臂回到折叠位，SDK 正常退出。</p><p>这是一次实机完成记录，不是重复实验的成功率。判断依据是连续图像与最终照片。原始评测中的 <code>status=success</code> 表示框架正常完成；本次 scorer 只统计步数，没有自动给出任务成功评分。</p></div>
+  </div>
+  <details class="r5-wide-details"><summary>启动时修正了什么，数字如何计数？</summary><div class="body">
+    <p>正式运动前，两个启动检查分别发现了 SDK 初始全零读数、相机原生分辨率不匹配并结束。修正反馈等待与分辨率后才进入这里展示的实际抓取；那两次没有策略运动指令。指尖长度使用本机 0.19 m 的标定。</p>
+    <p>本次有 36 条移动或夹爪指令、4 条保持并更新观测、1 条结束指令。机器人真正执行了 1553 次 step；框架还记录了终止动作，所以日志步数为 1554。视频包括初始画面与终止记录，共 1555 帧。不要把控制小步、决策观测和模型调用次数混为一谈。</p>
+    <p>没有记录到本次运行的命令拒绝或 guardrail 改写。这不表示安全检查无用；检查一直启用，目标在下发前还通过了本机的几何与读回检查。</p>
+  </div></details>
+  <div class="r5-downloads"><a href="cases/r5-cube/data.json" download>下载全部观测与动作数据</a><a href="cases/r5-cube/provenance.json" download>图像与来源校验值</a><a href="cases/r5-cube/fixed.mp4" download>固定相机回放</a><a href="cases/r5-cube/wrist.mp4" download>腕部相机回放</a></div>
+  <p class="r5-note">网页中的文字图解沿用前文固定版本。此案例使用 fork 的 R5 适配器与本地安全入口；每张相机原图以无损 WebP 保存，缩略图单独缩小用于导航。<a href="https://github.com/zhikangSu/inspect-robots/tree/bb6495fe24432485246a108be0858d2f46e3475e/plugins/inspect-robots-arx-r5">查看本次框架版本中的 R5 适配器</a>。</p>
+  <dialog id="r5-image-dialog" class="r5-dialog" aria-labelledby="r5-dialog-title"><div class="r5-dialog-header"><span id="r5-dialog-title"></span><button type="button" id="r5-dialog-close">关闭</button></div><img id="r5-dialog-image" alt=""><a id="r5-dialog-download" download>下载这张原图</a></dialog>
 </section>
 
 <!-- ===================== 附 ===================== -->
@@ -625,7 +740,7 @@
       <tr><td>AgiBot A2 Ultra 双臂</td><td><code>a2_arms</code></td><td><a href="https://github.com/robocurve/inspect-robots-agibot-a2">inspect-robots-agibot-a2</a></td><td>16 维关节位置</td><td>go1, openpi</td></tr>
       <tr><td>Unitree G1 双臂（站立）</td><td><code>g1_arms</code></td><td><a href="https://github.com/robocurve/inspect-robots-unitree-g1">inspect-robots-unitree-g1</a></td><td>16 维关节位置</td><td>gr00t</td></tr>
       <tr><td>SO-100 / SO-101</td><td><code>so_arm</code></td><td><a href="https://github.com/robocurve/inspect-robots-so101">inspect-robots-so101</a></td><td>6 维关节位置</td><td>lerobot</td></tr>
-      <tr><td>方舟无限 ARX R5 单臂 / 双臂</td><td><code>arx_r5</code></td><td><a href="https://github.com/zhikangSu/inspect-robots/tree/feat/arx-r5-embodiment/plugins/inspect-robots-arx-r5">我们 fork 里的 plugins/</a>（自写，待真机验证）</td><td>7 维或 14 维关节位置</td><td>—</td></tr>
+      <tr><td>方舟无限 ARX R5 单臂 / 双臂</td><td><code>arx_r5</code></td><td><a href="https://github.com/zhikangSu/inspect-robots/tree/feat/arx-r5-embodiment/plugins/inspect-robots-arx-r5">我们 fork 里的 plugins/</a>（<a href="#r5-case">左从臂已完成本页实机案例</a>；双臂未在此验证）</td><td>7 维或 14 维关节位置</td><td>—</td></tr>
       <tr><td>WidowX 250S（已停产）</td><td><code>widowx</code></td><td><a href="https://github.com/robocurve/inspect-robots-widowx">inspect-robots-widowx</a></td><td>7 维末端位姿增量</td><td>openvla, openpi</td></tr>
     </tbody>
   </table>
@@ -679,6 +794,7 @@
 </section>
 </main>
 </div>
+<script src="assets/r5-case.js" defer></script>
 <!-- source drawer -->
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" data-open="false" aria-label="源码片段">

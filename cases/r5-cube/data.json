@@ -1,0 +1,5262 @@
+{
+  "schema_version": 1,
+  "id": "r5-cube-20260919",
+  "task": "把木块放进蓝色盘子",
+  "date": "2026-09-19",
+  "stages": [
+    {
+      "id": "prepare",
+      "label": "展开与观察",
+      "first": 1,
+      "last": 6
+    },
+    {
+      "id": "approach",
+      "label": "对准与下降",
+      "first": 7,
+      "last": 18
+    },
+    {
+      "id": "grasp",
+      "label": "缓慢闭爪",
+      "first": 19,
+      "last": 20
+    },
+    {
+      "id": "verify",
+      "label": "抬起验握",
+      "first": 21,
+      "last": 25
+    },
+    {
+      "id": "transfer",
+      "label": "搬向盘子",
+      "first": 26,
+      "last": 27
+    },
+    {
+      "id": "place",
+      "label": "降低与松爪",
+      "first": 28,
+      "last": 33
+    },
+    {
+      "id": "return",
+      "label": "撤离与回零",
+      "first": 34,
+      "last": 41
+    }
+  ],
+  "observations": [
+    {
+      "seq": 1,
+      "title": "第一次观察：木块在盘外",
+      "explanation": "从臂处于折叠位，先检查木块、蓝色盘子和两路画面。第一条动作只向上试探 2 cm。",
+      "stage": "prepare",
+      "env_step": 0,
+      "elapsed_s": 0.0,
+      "captured_at": "2026-09-19T10:53:46.251792+00:00",
+      "state": {
+        "left_j0": -0.0002,
+        "left_j1": -0.004,
+        "left_j2": 0.0212,
+        "left_j3": 0.0566,
+        "left_j4": -0.0006,
+        "left_j5": -0.0177,
+        "left_gripper": -0.0003
+      },
+      "last_commanded": null,
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            -0.0019,
+            -0.0,
+            0.013
+          ],
+          "ee_rpy": [
+            -0.018,
+            -0.082,
+            0.0
+          ],
+          "tip_xyz": [
+            0.1875,
+            0.0001,
+            0.0285
+          ],
+          "ee_above_table": 0.1765,
+          "tip_above_table": 0.192
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/01-fixed.webp",
+        "wrist": "images/01-wrist.webp"
+      },
+      "thumbnail": "thumbs/01.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.00021163557824591467,
+          "left_j1": 0.06371673862100098,
+          "left_j2": 0.09767471533027695,
+          "left_j3": 0.047839640809832114,
+          "left_j4": -0.0006116428808461258,
+          "left_j5": -0.01769904868492957
+        },
+        "note": "Initial 2 cm upward probe from folded pose; verify measured motion and both camera views before proceeding",
+        "id": 1
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 20,
+        "start": {
+          "left_j0": -0.0002,
+          "left_j1": -0.004,
+          "left_j2": 0.0212,
+          "left_j3": 0.0566,
+          "left_j4": -0.0006,
+          "left_j5": -0.0177
+        },
+        "seconds": 1.0,
+        "target": {
+          "left_j0": -0.0002,
+          "left_j1": 0.0637,
+          "left_j2": 0.0977,
+          "left_j3": 0.0478,
+          "left_j4": -0.0006,
+          "left_j5": -0.0177
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              -0.002,
+              -0.0,
+              0.033
+            ],
+            "ee_rpy": [
+              -0.018,
+              -0.082,
+              0.0
+            ],
+            "tip_xyz": [
+              0.1874,
+              0.0001,
+              0.0485
+            ],
+            "ee_above_table": 0.1965,
+            "tip_above_table": 0.212
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              -0.002,
+              -0.0,
+              0.033
+            ],
+            "ee_rpy": [
+              -0.018,
+              -0.082,
+              0.0
+            ],
+            "tip_xyz": [
+              0.1874,
+              0.0001,
+              0.0485
+            ],
+            "ee_above_table": 0.1965,
+            "tip_above_table": 0.212
+          }
+        },
+        "cmd": 1,
+        "obs_seq": 1
+      },
+      "next_observation": 2,
+      "replay_s": 0.0
+    },
+    {
+      "seq": 2,
+      "title": "向上试探后重新观察",
+      "explanation": "读回位置和画面变化支持向上的运动方向；接下来分段展开。",
+      "stage": "prepare",
+      "env_step": 20,
+      "elapsed_s": 8.765,
+      "captured_at": "2026-09-19T10:53:55.016406+00:00",
+      "state": {
+        "left_j0": -0.0002,
+        "left_j1": 0.0559,
+        "left_j2": 0.0719,
+        "left_j3": 0.1162,
+        "left_j4": -0.0006,
+        "left_j5": -0.0219,
+        "left_gripper": -0.0004
+      },
+      "last_commanded": {
+        "left_j0": -0.0002,
+        "left_j1": 0.0637,
+        "left_j2": 0.0977,
+        "left_j3": 0.0478,
+        "left_j4": -0.0006,
+        "left_j5": -0.0177,
+        "left_gripper": 0.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            -0.0014,
+            -0.0,
+            0.0314
+          ],
+          "ee_rpy": [
+            -0.022,
+            -0.132,
+            0.0
+          ],
+          "tip_xyz": [
+            0.1869,
+            0.0001,
+            0.0564
+          ],
+          "ee_above_table": 0.1949,
+          "tip_above_table": 0.2199
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/02-fixed.webp",
+        "wrist": "images/02-wrist.webp"
+      },
+      "thumbnail": "thumbs/02.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.1,
+          "left_j1": 0.4,
+          "left_j2": 0.4,
+          "left_j3": -0.25,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "Initial upward probe matched expected direction; unfold slowly to the first high-clearance observation waypoint",
+        "id": 2
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 85,
+        "start": {
+          "left_j0": -0.0002,
+          "left_j1": 0.0637,
+          "left_j2": 0.0977,
+          "left_j3": 0.0478,
+          "left_j4": -0.0006,
+          "left_j5": -0.0177
+        },
+        "seconds": 4.25,
+        "target": {
+          "left_j0": -0.1,
+          "left_j1": 0.4,
+          "left_j2": 0.4,
+          "left_j3": -0.25,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0173,
+              -0.0115,
+              0.0789
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.25,
+              -0.1
+            ],
+            "tip_xyz": [
+              0.2004,
+              -0.0299,
+              0.0319
+            ],
+            "ee_above_table": 0.2424,
+            "tip_above_table": 0.1954
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0186,
+              -0.0117,
+              0.0773
+            ],
+            "ee_rpy": [
+              -0.004,
+              0.2,
+              -0.1
+            ],
+            "tip_xyz": [
+              0.2039,
+              -0.0303,
+              0.0396
+            ],
+            "ee_above_table": 0.2408,
+            "tip_above_table": 0.2031
+          }
+        },
+        "cmd": 2,
+        "obs_seq": 2
+      },
+      "next_observation": 3,
+      "replay_s": 1.0
+    },
+    {
+      "seq": 3,
+      "title": "展开到第一中间位",
+      "explanation": "在远离桌面的高度展开，每段动作后重新取图。",
+      "stage": "prepare",
+      "env_step": 105,
+      "elapsed_s": 46.174,
+      "captured_at": "2026-09-19T10:54:32.425773+00:00",
+      "state": {
+        "left_j0": -0.0952,
+        "left_j1": 0.3943,
+        "left_j2": 0.3717,
+        "left_j3": -0.1749,
+        "left_j4": -0.0006,
+        "left_j5": -0.0177,
+        "left_gripper": -0.0004
+      },
+      "last_commanded": {
+        "left_j0": -0.1,
+        "left_j1": 0.4,
+        "left_j2": 0.4,
+        "left_j3": -0.25,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 0.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.0191,
+            -0.0111,
+            0.0769
+          ],
+          "ee_rpy": [
+            -0.018,
+            0.197,
+            -0.095
+          ],
+          "tip_xyz": [
+            0.2046,
+            -0.0287,
+            0.0396
+          ],
+          "ee_above_table": 0.2404,
+          "tip_above_table": 0.2031
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/03-fixed.webp",
+        "wrist": "images/03-wrist.webp"
+      },
+      "thumbnail": "thumbs/03.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.23,
+          "left_j1": 0.8,
+          "left_j2": 0.8,
+          "left_j3": -0.57,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "High-clearance unfolding continues toward the calibrated observation pose; scene is clear in wrist and fixed cameras",
+        "id": 3
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 101,
+        "start": {
+          "left_j0": -0.1,
+          "left_j1": 0.4,
+          "left_j2": 0.4,
+          "left_j3": -0.25,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "seconds": 5.05,
+        "target": {
+          "left_j0": -0.23,
+          "left_j1": 0.8,
+          "left_j2": 0.8,
+          "left_j3": -0.57,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0605,
+              -0.037,
+              0.1372
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.57,
+              -0.23
+            ],
+            "tip_xyz": [
+              0.2163,
+              -0.0735,
+              0.0347
+            ],
+            "ee_above_table": 0.3007,
+            "tip_above_table": 0.1982
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0635,
+              -0.0369,
+              0.135
+            ],
+            "ee_rpy": [
+              -0.017,
+              0.517,
+              -0.225
+            ],
+            "tip_xyz": [
+              0.2244,
+              -0.0737,
+              0.041
+            ],
+            "ee_above_table": 0.2985,
+            "tip_above_table": 0.2045
+          }
+        },
+        "cmd": 3,
+        "obs_seq": 3
+      },
+      "next_observation": 4,
+      "replay_s": 5.25
+    },
+    {
+      "seq": 4,
+      "title": "继续展开，看到工作区",
+      "explanation": "木块和盘子已进入腕部视野，继续到便于俯视的观察位。",
+      "stage": "prepare",
+      "env_step": 206,
+      "elapsed_s": 68.48,
+      "captured_at": "2026-09-19T10:54:54.731898+00:00",
+      "state": {
+        "left_j0": -0.2241,
+        "left_j1": 0.7937,
+        "left_j2": 0.7746,
+        "left_j3": -0.4961,
+        "left_j4": -0.0002,
+        "left_j5": -0.0177,
+        "left_gripper": -0.0004
+      },
+      "last_commanded": {
+        "left_j0": -0.23,
+        "left_j1": 0.8,
+        "left_j2": 0.8,
+        "left_j3": -0.57,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 0.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.0633,
+            -0.0367,
+            0.1359
+          ],
+          "ee_rpy": [
+            -0.018,
+            0.515,
+            -0.224
+          ],
+          "tip_xyz": [
+            0.2245,
+            -0.0734,
+            0.0423
+          ],
+          "ee_above_table": 0.2994,
+          "tip_above_table": 0.2058
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/04-fixed.webp",
+        "wrist": "images/04-wrist.webp"
+      },
+      "thumbnail": "thumbs/04.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.35,
+          "left_j1": 1.2,
+          "left_j2": 1.2,
+          "left_j3": -0.9,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "Continue to observation pose above the work area; cube and plate are visible ahead and the hand remains well above the tabletop",
+        "id": 4
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 101,
+        "start": {
+          "left_j0": -0.23,
+          "left_j1": 0.8,
+          "left_j2": 0.8,
+          "left_j3": -0.57,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "seconds": 5.05,
+        "target": {
+          "left_j0": -0.35,
+          "left_j1": 1.2,
+          "left_j2": 1.2,
+          "left_j3": -0.9,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1179,
+              -0.0787,
+              0.1703
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.9,
+              -0.35
+            ],
+            "tip_xyz": [
+              0.2288,
+              -0.1192,
+              0.0215
+            ],
+            "ee_above_table": 0.3338,
+            "tip_above_table": 0.185
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1217,
+              -0.0786,
+              0.1684
+            ],
+            "ee_rpy": [
+              -0.018,
+              0.845,
+              -0.344
+            ],
+            "tip_xyz": [
+              0.2404,
+              -0.1211,
+              0.0263
+            ],
+            "ee_above_table": 0.3319,
+            "tip_above_table": 0.1898
+          }
+        },
+        "cmd": 4,
+        "obs_seq": 4
+      },
+      "next_observation": 5,
+      "replay_s": 10.3
+    },
+    {
+      "seq": 5,
+      "title": "到达高处观察位",
+      "explanation": "先张开夹爪，让目标与两指都能被看清。",
+      "stage": "prepare",
+      "env_step": 307,
+      "elapsed_s": 86.183,
+      "captured_at": "2026-09-19T10:55:12.434583+00:00",
+      "state": {
+        "left_j0": -0.3462,
+        "left_j1": 1.195,
+        "left_j2": 1.1759,
+        "left_j3": -0.8429,
+        "left_j4": -0.0002,
+        "left_j5": -0.0174,
+        "left_gripper": -0.0004
+      },
+      "last_commanded": {
+        "left_j0": -0.35,
+        "left_j1": 1.2,
+        "left_j2": 1.2,
+        "left_j3": -0.9,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 0.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1207,
+            -0.0788,
+            0.1675
+          ],
+          "ee_rpy": [
+            -0.017,
+            0.862,
+            -0.346
+          ],
+          "tip_xyz": [
+            0.2371,
+            -0.1207,
+            0.0233
+          ],
+          "ee_above_table": 0.331,
+          "tip_above_table": 0.1868
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/05-fixed.webp",
+        "wrist": "images/05-wrist.webp"
+      },
+      "thumbnail": "thumbs/05.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_gripper": 1.0
+        },
+        "note": "At the high observation pose, open the gripper fully to view and approach the cube with clear jaw separation",
+        "id": 5
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 63,
+        "start": {
+          "left_gripper": 0.0
+        },
+        "seconds": 3.15,
+        "target": {
+          "left_gripper": 1.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1179,
+              -0.0787,
+              0.1703
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.9,
+              -0.35
+            ],
+            "tip_xyz": [
+              0.2288,
+              -0.1192,
+              0.0215
+            ],
+            "ee_above_table": 0.3338,
+            "tip_above_table": 0.185
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1207,
+              -0.0788,
+              0.1675
+            ],
+            "ee_rpy": [
+              -0.017,
+              0.862,
+              -0.346
+            ],
+            "tip_xyz": [
+              0.2371,
+              -0.1207,
+              0.0233
+            ],
+            "ee_above_table": 0.331,
+            "tip_above_table": 0.1868
+          }
+        },
+        "cmd": 5,
+        "obs_seq": 5
+      },
+      "next_observation": 6,
+      "replay_s": 15.35
+    },
+    {
+      "seq": 6,
+      "title": "夹爪全开，定位木块",
+      "explanation": "从腕部图像和深度估计木块位置，先在高处横向对准。",
+      "stage": "prepare",
+      "env_step": 370,
+      "elapsed_s": 94.518,
+      "captured_at": "2026-09-19T10:55:20.770278+00:00",
+      "state": {
+        "left_j0": -0.3473,
+        "left_j1": 1.1995,
+        "left_j2": 1.1809,
+        "left_j3": -0.8444,
+        "left_j4": -0.0002,
+        "left_j5": -0.0174,
+        "left_gripper": 0.9642
+      },
+      "last_commanded": {
+        "left_j0": -0.35,
+        "left_j1": 1.2,
+        "left_j2": 1.2,
+        "left_j3": -0.9,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1216,
+            -0.0794,
+            0.1679
+          ],
+          "ee_rpy": [
+            -0.017,
+            0.863,
+            -0.347
+          ],
+          "tip_xyz": [
+            0.2377,
+            -0.1214,
+            0.0236
+          ],
+          "ee_above_table": 0.3314,
+          "tip_above_table": 0.1871
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/06-fixed.webp",
+        "wrist": "images/06-wrist.webp"
+      },
+      "thumbnail": "thumbs/06.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.6997839410615629,
+          "left_j1": 1.63167231160421,
+          "left_j2": 1.546019518980625,
+          "left_j3": -0.951332862974293,
+          "left_j4": 0.00018044034195982474,
+          "left_j5": 0.017369538454265657
+        },
+        "note": "Depth confirms cube on tabletop at the right of wrist view; move at high clearance above its estimated location, keep jaws open, and reobserve before descending",
+        "id": 6
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 108,
+        "start": {
+          "left_j0": -0.35,
+          "left_j1": 1.2,
+          "left_j2": 1.2,
+          "left_j3": -0.9,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "seconds": 5.4,
+        "target": {
+          "left_j0": -0.6998,
+          "left_j1": 1.6317,
+          "left_j2": 1.546,
+          "left_j3": -0.9513,
+          "left_j4": 0.0002,
+          "left_j5": 0.0174
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1582,
+              -0.2155,
+              0.1591
+            ],
+            "ee_rpy": [
+              0.017,
+              1.037,
+              -0.7
+            ],
+            "tip_xyz": [
+              0.2321,
+              -0.2777,
+              -0.0045
+            ],
+            "ee_above_table": 0.3226,
+            "tip_above_table": 0.159
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1616,
+              -0.2171,
+              0.1563
+            ],
+            "ee_rpy": [
+              0.0,
+              1.0,
+              -0.697
+            ],
+            "tip_xyz": [
+              0.2403,
+              -0.283,
+              -0.0036
+            ],
+            "ee_above_table": 0.3198,
+            "tip_above_table": 0.1599
+          }
+        },
+        "cmd": 6,
+        "obs_seq": 6
+      },
+      "next_observation": 7,
+      "replay_s": 18.5,
+      "depth": {
+        "image": "images/06-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.8236,
+        "source_sha256": "4ce2fac7c78cc875f96f6bf230396752ec8f5ac7027a2f9fdb79a6c8b65e9110",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 7,
+      "title": "移动到木块上方",
+      "explanation": "木块已经位于两指之间，深度仍显示较大的桌面间隙。",
+      "stage": "approach",
+      "env_step": 478,
+      "elapsed_s": 155.3,
+      "captured_at": "2026-09-19T10:56:21.551858+00:00",
+      "state": {
+        "left_j0": -0.6918,
+        "left_j1": 1.6241,
+        "left_j2": 1.5242,
+        "left_j3": -0.9016,
+        "left_j4": -0.0002,
+        "left_j5": -0.0093,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.6998,
+        "left_j1": 1.6317,
+        "left_j2": 1.546,
+        "left_j3": -0.9513,
+        "left_j4": 0.0002,
+        "left_j5": 0.0174,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1611,
+            -0.2143,
+            0.1574
+          ],
+          "ee_rpy": [
+            -0.009,
+            1.002,
+            -0.691
+          ],
+          "tip_xyz": [
+            0.2399,
+            -0.2796,
+            -0.0026
+          ],
+          "ee_above_table": 0.3209,
+          "tip_above_table": 0.1609
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/07-fixed.webp",
+        "wrist": "images/07-wrist.webp"
+      },
+      "thumbnail": "thumbs/07.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7313698547170443,
+          "left_j1": 1.633384981031754,
+          "left_j2": 1.4681640954594712,
+          "left_j3": -0.8701829792164766,
+          "left_j4": 0.0003790580725322041,
+          "left_j5": 0.026667384580625324
+        },
+        "note": "Cube lies 11 mm to the right of the calibrated grasp line at depth 0.248 m; correct laterally and descend only 2 cm, then reobserve",
+        "id": 7
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.6998,
+          "left_j1": 1.6317,
+          "left_j2": 1.546,
+          "left_j3": -0.9513,
+          "left_j4": 0.0002,
+          "left_j5": 0.0174
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6334,
+          "left_j2": 1.4682,
+          "left_j3": -0.8702,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1534,
+              -0.2254,
+              0.1392
+            ],
+            "ee_rpy": [
+              0.026,
+              1.035,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2255,
+              -0.2901,
+              -0.0242
+            ],
+            "ee_above_table": 0.3027,
+            "tip_above_table": 0.1393
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1561,
+              -0.2241,
+              0.1375
+            ],
+            "ee_rpy": [
+              -0.0,
+              1.0,
+              -0.723
+            ],
+            "tip_xyz": [
+              0.233,
+              -0.2921,
+              -0.0224
+            ],
+            "ee_above_table": 0.301,
+            "tip_above_table": 0.1411
+          }
+        },
+        "cmd": 7,
+        "obs_seq": 7
+      },
+      "next_observation": 8,
+      "replay_s": 23.9,
+      "depth": {
+        "image": "images/07-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.8326,
+        "source_sha256": "492901b946af6932d91bea8e064e5df1d26d9daa3efdf9f0f0af58d0ca0ceb16",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 8,
+      "title": "修正偏差，下降 2 cm",
+      "explanation": "用画面中的残余偏差修正位置，保持小步下降。",
+      "stage": "approach",
+      "env_step": 499,
+      "elapsed_s": 220.881,
+      "captured_at": "2026-09-19T10:57:27.133113+00:00",
+      "state": {
+        "left_j0": -0.725,
+        "left_j1": 1.631,
+        "left_j2": 1.4738,
+        "left_j3": -0.8471,
+        "left_j4": -0.0006,
+        "left_j5": 0.0051,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7314,
+        "left_j1": 1.6334,
+        "left_j2": 1.4682,
+        "left_j3": -0.8702,
+        "left_j4": 0.0004,
+        "left_j5": 0.0267,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1562,
+            -0.2249,
+            0.1428
+          ],
+          "ee_rpy": [
+            0.006,
+            1.004,
+            -0.724
+          ],
+          "tip_xyz": [
+            0.2326,
+            -0.2925,
+            -0.0175
+          ],
+          "ee_above_table": 0.3063,
+          "tip_above_table": 0.146
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/08-fixed.webp",
+        "wrist": "images/08-wrist.webp"
+      },
+      "thumbnail": "thumbs/08.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7314012557787444,
+          "left_j1": 1.6307554324171734,
+          "left_j2": 1.386070525397004,
+          "left_j3": -0.790717546329747,
+          "left_j4": 0.00039931202847340086,
+          "left_j5": 0.02669886373737454
+        },
+        "note": "Cube is centered between open jaws at high clearance; descend another 2 cm while holding orientation and lateral target",
+        "id": 8
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6334,
+          "left_j2": 1.4682,
+          "left_j3": -0.8702,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6308,
+          "left_j2": 1.3861,
+          "left_j3": -0.7907,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1534,
+              -0.2254,
+              0.1192
+            ],
+            "ee_rpy": [
+              0.026,
+              1.035,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2255,
+              -0.2902,
+              -0.0442
+            ],
+            "ee_above_table": 0.2827,
+            "tip_above_table": 0.1193
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1563,
+              -0.225,
+              0.1229
+            ],
+            "ee_rpy": [
+              0.006,
+              1.004,
+              -0.724
+            ],
+            "tip_xyz": [
+              0.2327,
+              -0.2926,
+              -0.0374
+            ],
+            "ee_above_table": 0.2864,
+            "tip_above_table": 0.1261
+          }
+        },
+        "cmd": 8,
+        "obs_seq": 8
+      },
+      "next_observation": 9,
+      "replay_s": 24.95
+    },
+    {
+      "seq": 9,
+      "title": "木块保持在两指之间",
+      "explanation": "下降后再次确认木块仍在抓取线附近。",
+      "stage": "approach",
+      "env_step": 520,
+      "elapsed_s": 232.746,
+      "captured_at": "2026-09-19T10:57:38.998043+00:00",
+      "state": {
+        "left_j0": -0.728,
+        "left_j1": 1.631,
+        "left_j2": 1.3949,
+        "left_j3": -0.7647,
+        "left_j4": -0.0002,
+        "left_j5": 0.0093,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7314,
+        "left_j1": 1.6308,
+        "left_j2": 1.3861,
+        "left_j3": -0.7907,
+        "left_j4": 0.0004,
+        "left_j5": 0.0267,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1564,
+            -0.2265,
+            0.1231
+          ],
+          "ee_rpy": [
+            0.01,
+            1.001,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2329,
+            -0.2946,
+            -0.0368
+          ],
+          "ee_above_table": 0.2866,
+          "tip_above_table": 0.1267
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/09-fixed.webp",
+        "wrist": "images/09-wrist.webp"
+      },
+      "thumbnail": "thumbs/09.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7314012494449086,
+          "left_j1": 1.6341643728585598,
+          "left_j2": 1.3103287526423881,
+          "left_j3": -0.7115663700690259,
+          "left_j4": 0.0003993155898843479,
+          "left_j5": 0.02669886927338845
+        },
+        "note": "Cube remains centered and visible; continue the guarded descent by 2 cm with both jaws open",
+        "id": 9
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 20,
+        "start": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6308,
+          "left_j2": 1.3861,
+          "left_j3": -0.7907,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "seconds": 1.0,
+        "target": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6342,
+          "left_j2": 1.3103,
+          "left_j3": -0.7116,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1534,
+              -0.2254,
+              0.0992
+            ],
+            "ee_rpy": [
+              0.026,
+              1.035,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2255,
+              -0.2902,
+              -0.0642
+            ],
+            "ee_above_table": 0.2627,
+            "tip_above_table": 0.0993
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1565,
+              -0.2266,
+              0.1031
+            ],
+            "ee_rpy": [
+              0.01,
+              1.001,
+              -0.728
+            ],
+            "tip_xyz": [
+              0.2331,
+              -0.2948,
+              -0.0568
+            ],
+            "ee_above_table": 0.2666,
+            "tip_above_table": 0.1067
+          }
+        },
+        "cmd": 9,
+        "obs_seq": 9
+      },
+      "next_observation": 10,
+      "replay_s": 26.0
+    },
+    {
+      "seq": 10,
+      "title": "继续小步下降",
+      "explanation": "保留当前姿态，继续下降并检查画面。",
+      "stage": "approach",
+      "env_step": 540,
+      "elapsed_s": 246.225,
+      "captured_at": "2026-09-19T10:57:52.476568+00:00",
+      "state": {
+        "left_j0": -0.728,
+        "left_j1": 1.631,
+        "left_j2": 1.3201,
+        "left_j3": -0.6861,
+        "left_j4": -0.0002,
+        "left_j5": 0.0124,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7314,
+        "left_j1": 1.6342,
+        "left_j2": 1.3103,
+        "left_j3": -0.7116,
+        "left_j4": 0.0004,
+        "left_j5": 0.0267,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1561,
+            -0.2262,
+            0.1045
+          ],
+          "ee_rpy": [
+            0.013,
+            0.997,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2331,
+            -0.2948,
+            -0.0551
+          ],
+          "ee_above_table": 0.268,
+          "tip_above_table": 0.1084
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/10-fixed.webp",
+        "wrist": "images/10-wrist.webp"
+      },
+      "thumbnail": "thumbs/10.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7314263926064778,
+          "left_j1": 1.6436076694928814,
+          "left_j2": 1.240836605106128,
+          "left_j3": -0.632750039327308,
+          "left_j4": 0.00038547020113489217,
+          "left_j5": 0.02667610092718466
+        },
+        "note": "No contact or obstruction visible; descend 2 cm more, remaining approximately 8 cm above the table",
+        "id": 10
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 20,
+        "start": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6342,
+          "left_j2": 1.3103,
+          "left_j3": -0.7116,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "seconds": 1.0,
+        "target": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6436,
+          "left_j2": 1.2408,
+          "left_j3": -0.6328,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1535,
+              -0.2254,
+              0.0793
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2255,
+              -0.2902,
+              -0.0841
+            ],
+            "ee_above_table": 0.2428,
+            "tip_above_table": 0.0794
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1563,
+              -0.2264,
+              0.0845
+            ],
+            "ee_rpy": [
+              0.013,
+              0.997,
+              -0.728
+            ],
+            "tip_xyz": [
+              0.2333,
+              -0.295,
+              -0.0751
+            ],
+            "ee_above_table": 0.248,
+            "tip_above_table": 0.0884
+          }
+        },
+        "cmd": 10,
+        "obs_seq": 10
+      },
+      "next_observation": 11,
+      "replay_s": 27.0
+    },
+    {
+      "seq": 11,
+      "title": "下降至约 9 cm 间隙",
+      "explanation": "深度核验用于区分木块顶面与桌面，避免把顶面当成下降终点。",
+      "stage": "approach",
+      "env_step": 560,
+      "elapsed_s": 260.227,
+      "captured_at": "2026-09-19T10:58:06.478409+00:00",
+      "state": {
+        "left_j0": -0.728,
+        "left_j1": 1.6371,
+        "left_j2": 1.2499,
+        "left_j3": -0.6083,
+        "left_j4": -0.0002,
+        "left_j5": 0.0124,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7314,
+        "left_j1": 1.6436,
+        "left_j2": 1.2408,
+        "left_j3": -0.6328,
+        "left_j4": 0.0004,
+        "left_j5": 0.0267,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1559,
+            -0.226,
+            0.0853
+          ],
+          "ee_rpy": [
+            0.013,
+            0.995,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2331,
+            -0.2948,
+            -0.0741
+          ],
+          "ee_above_table": 0.2488,
+          "tip_above_table": 0.0894
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/11-fixed.webp",
+        "wrist": "images/11-wrist.webp"
+      },
+      "thumbnail": "thumbs/11.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7169627109268071,
+          "left_j1": 1.6550238293302457,
+          "left_j2": 1.1725836494454498,
+          "left_j3": -0.553230456877466,
+          "left_j4": 0.007760502730208008,
+          "left_j5": 0.03911624675701226
+        },
+        "note": "Fresh depth places the cube top at 0.176 m and table at 0.204 m; correct the remaining 5 mm image offset and descend 2 cm",
+        "id": 11
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 20,
+        "start": {
+          "left_j0": -0.7314,
+          "left_j1": 1.6436,
+          "left_j2": 1.2408,
+          "left_j3": -0.6328,
+          "left_j4": 0.0004,
+          "left_j5": 0.0267
+        },
+        "seconds": 1.0,
+        "target": {
+          "left_j0": -0.717,
+          "left_j1": 1.655,
+          "left_j2": 1.1726,
+          "left_j3": -0.5532,
+          "left_j4": 0.0078,
+          "left_j5": 0.0391
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1558,
+              -0.2212,
+              0.0594
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2278,
+              -0.286,
+              -0.1041
+            ],
+            "ee_above_table": 0.2229,
+            "tip_above_table": 0.0594
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1584,
+              -0.222,
+              0.0654
+            ],
+            "ee_rpy": [
+              0.014,
+              0.996,
+              -0.727
+            ],
+            "tip_xyz": [
+              0.2356,
+              -0.2907,
+              -0.0941
+            ],
+            "ee_above_table": 0.2289,
+            "tip_above_table": 0.0694
+          }
+        },
+        "cmd": 11,
+        "obs_seq": 11
+      },
+      "next_observation": 12,
+      "replay_s": 28.0,
+      "depth": {
+        "image": "images/11-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.8311,
+        "source_sha256": "53a5de2b79dba5bfb90e1d6ce63691fc7e131e49b93d20465aba0aa6da56f351",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 12,
+      "title": "修正约 5 mm 的偏差",
+      "explanation": "按新的画面修正横向偏差，然后再次下降。",
+      "stage": "approach",
+      "env_step": 580,
+      "elapsed_s": 291.034,
+      "captured_at": "2026-09-19T10:58:37.285995+00:00",
+      "state": {
+        "left_j0": -0.72,
+        "left_j1": 1.6482,
+        "left_j2": 1.1812,
+        "left_j3": -0.5304,
+        "left_j4": 0.0013,
+        "left_j5": 0.0242,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.717,
+        "left_j1": 1.655,
+        "left_j2": 1.1726,
+        "left_j3": -0.5532,
+        "left_j4": 0.0078,
+        "left_j5": 0.0391,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1569,
+            -0.2234,
+            0.0653
+          ],
+          "ee_rpy": [
+            0.022,
+            0.997,
+            -0.722
+          ],
+          "tip_xyz": [
+            0.2342,
+            -0.2915,
+            -0.0943
+          ],
+          "ee_above_table": 0.2288,
+          "tip_above_table": 0.0692
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/12-fixed.webp",
+        "wrist": "images/12-wrist.webp"
+      },
+      "thumbnail": "thumbs/12.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7170567987025578,
+          "left_j1": 1.6764148646996335,
+          "left_j2": 1.1139823533026625,
+          "left_j3": -0.47318476269650817,
+          "left_j4": 0.007768680215613991,
+          "left_j5": 0.03904868019969744
+        },
+        "note": "Cube remains centered on the grasp line and gripper is clear of the table; descend 2 cm to the next observation level",
+        "id": 12
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.717,
+          "left_j1": 1.655,
+          "left_j2": 1.1726,
+          "left_j3": -0.5532,
+          "left_j4": 0.0078,
+          "left_j5": 0.0391
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.7171,
+          "left_j1": 1.6764,
+          "left_j2": 1.114,
+          "left_j3": -0.4732,
+          "left_j4": 0.0078,
+          "left_j5": 0.039
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1557,
+              -0.2213,
+              0.0395
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2278,
+              -0.286,
+              -0.124
+            ],
+            "ee_above_table": 0.203,
+            "tip_above_table": 0.0395
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1571,
+              -0.2236,
+              0.0453
+            ],
+            "ee_rpy": [
+              0.022,
+              0.997,
+              -0.723
+            ],
+            "tip_xyz": [
+              0.2344,
+              -0.2918,
+              -0.1143
+            ],
+            "ee_above_table": 0.2088,
+            "tip_above_table": 0.0492
+          }
+        },
+        "cmd": 12,
+        "obs_seq": 12
+      },
+      "next_observation": 13,
+      "replay_s": 29.0
+    },
+    {
+      "seq": 13,
+      "title": "接近木块上方",
+      "explanation": "接近木块时缩小移动步幅，下一条先保持位置获取稳定读数。",
+      "stage": "approach",
+      "env_step": 601,
+      "elapsed_s": 305.668,
+      "captured_at": "2026-09-19T10:58:51.919846+00:00",
+      "state": {
+        "left_j0": -0.72,
+        "left_j1": 1.6691,
+        "left_j2": 1.1221,
+        "left_j3": -0.4503,
+        "left_j4": 0.0044,
+        "left_j5": 0.028,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7171,
+        "left_j1": 1.6764,
+        "left_j2": 1.114,
+        "left_j3": -0.4732,
+        "left_j4": 0.0078,
+        "left_j5": 0.039,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.157,
+            -0.2235,
+            0.0453
+          ],
+          "ee_rpy": [
+            0.021,
+            0.997,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2339,
+            -0.2921,
+            -0.1143
+          ],
+          "ee_above_table": 0.2088,
+          "tip_above_table": 0.0492
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/13-fixed.webp",
+        "wrist": "images/13-wrist.webp"
+      },
+      "thumbnail": "thumbs/13.webp",
+      "next_command": {
+        "op": "hold",
+        "note": "fresh observation",
+        "id": 13
+      },
+      "reply": {
+        "ok": true,
+        "op": "hold",
+        "steps": 1,
+        "seconds": 0.05,
+        "cmd": 13,
+        "obs_seq": 13
+      },
+      "next_observation": 14,
+      "replay_s": 30.05
+    },
+    {
+      "seq": 14,
+      "title": "保持姿态，核验深度",
+      "explanation": "这次 hold 只更新观测；额外深度检查显示桌面和木块顶面的距离。",
+      "stage": "approach",
+      "env_step": 602,
+      "elapsed_s": 321.679,
+      "captured_at": "2026-09-19T10:59:07.931098+00:00",
+      "state": {
+        "left_j0": -0.72,
+        "left_j1": 1.6722,
+        "left_j2": 1.1187,
+        "left_j3": -0.44,
+        "left_j4": 0.0044,
+        "left_j5": 0.028,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7171,
+        "left_j1": 1.6764,
+        "left_j2": 1.114,
+        "left_j3": -0.4732,
+        "left_j4": 0.0078,
+        "left_j5": 0.039,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1574,
+            -0.2239,
+            0.0439
+          ],
+          "ee_rpy": [
+            0.021,
+            0.994,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2348,
+            -0.2929,
+            -0.1154
+          ],
+          "ee_above_table": 0.2074,
+          "tip_above_table": 0.0481
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/14-fixed.webp",
+        "wrist": "images/14-wrist.webp"
+      },
+      "thumbnail": "thumbs/14.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.708035120582393,
+          "left_j1": 1.7016633560337524,
+          "left_j2": 1.0794540511217874,
+          "left_j3": -0.41347999444320177,
+          "left_j4": 0.012420123793937152,
+          "left_j5": 0.04679464501328023
+        },
+        "note": "Depth plane gives 45 mm fingertip clearance and 29 mm cube height; correct about 3 mm laterally and lower only 15 mm with the jaws fully open",
+        "id": 14
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 15,
+        "start": {
+          "left_j0": -0.7171,
+          "left_j1": 1.6764,
+          "left_j2": 1.114,
+          "left_j3": -0.4732,
+          "left_j4": 0.0078,
+          "left_j5": 0.039
+        },
+        "seconds": 0.75,
+        "target": {
+          "left_j0": -0.708,
+          "left_j1": 1.7017,
+          "left_j2": 1.0795,
+          "left_j3": -0.4135,
+          "left_j4": 0.0124,
+          "left_j5": 0.0468
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0245
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2308,
+              -0.2848,
+              -0.1389
+            ],
+            "ee_above_table": 0.188,
+            "tip_above_table": 0.0246
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1605,
+              -0.2227,
+              0.0289
+            ],
+            "ee_rpy": [
+              0.022,
+              0.994,
+              -0.728
+            ],
+            "tip_xyz": [
+              0.238,
+              -0.2917,
+              -0.1303
+            ],
+            "ee_above_table": 0.1924,
+            "tip_above_table": 0.0332
+          }
+        },
+        "cmd": 14,
+        "obs_seq": 14
+      },
+      "next_observation": 15,
+      "replay_s": 30.1,
+      "depth": {
+        "image": "images/14-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.8268,
+        "source_sha256": "01fdbace0ed3d64deba31ccc245bde4c0f0124da256d15b8091a2c3628117324",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 15,
+      "title": "手指下降到木块两侧",
+      "explanation": "手指逐渐进入木块两侧，木块尚未移动。",
+      "stage": "approach",
+      "env_step": 617,
+      "elapsed_s": 363.455,
+      "captured_at": "2026-09-19T10:59:49.707130+00:00",
+      "state": {
+        "left_j0": -0.712,
+        "left_j1": 1.6936,
+        "left_j2": 1.0859,
+        "left_j3": -0.3866,
+        "left_j4": 0.0082,
+        "left_j5": 0.0326,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.708,
+        "left_j1": 1.7017,
+        "left_j2": 1.0795,
+        "left_j3": -0.4135,
+        "left_j4": 0.0124,
+        "left_j5": 0.0468,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1599,
+            -0.2226,
+            0.0303
+          ],
+          "ee_rpy": [
+            0.02,
+            0.994,
+            -0.727
+          ],
+          "tip_xyz": [
+            0.2373,
+            -0.2915,
+            -0.129
+          ],
+          "ee_above_table": 0.1938,
+          "tip_above_table": 0.0345
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/15-fixed.webp",
+        "wrist": "images/15-wrist.webp"
+      },
+      "thumbnail": "thumbs/15.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.708075754260606,
+          "left_j1": 1.7202588398668142,
+          "left_j2": 1.0494120269715224,
+          "left_j3": -0.3648615317213468,
+          "left_j4": 0.012358497667256694,
+          "left_j5": 0.046731370054003095
+        },
+        "note": "Cube stays stationary and centered; lower 12 mm so the open fingers extend beside the cube, retaining a checked table margin",
+        "id": 15
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 13,
+        "start": {
+          "left_j0": -0.708,
+          "left_j1": 1.7017,
+          "left_j2": 1.0795,
+          "left_j3": -0.4135,
+          "left_j4": 0.0124,
+          "left_j5": 0.0468
+        },
+        "seconds": 0.65,
+        "target": {
+          "left_j0": -0.7081,
+          "left_j1": 1.7203,
+          "left_j2": 1.0494,
+          "left_j3": -0.3649,
+          "left_j4": 0.0124,
+          "left_j5": 0.0467
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0126
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2308,
+              -0.2848,
+              -0.1509
+            ],
+            "ee_above_table": 0.1761,
+            "tip_above_table": 0.0126
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.16,
+              -0.2227,
+              0.0183
+            ],
+            "ee_rpy": [
+              0.02,
+              0.994,
+              -0.727
+            ],
+            "tip_xyz": [
+              0.2374,
+              -0.2916,
+              -0.141
+            ],
+            "ee_above_table": 0.1818,
+            "tip_above_table": 0.0225
+          }
+        },
+        "cmd": 15,
+        "obs_seq": 15
+      },
+      "next_observation": 16,
+      "replay_s": 30.85
+    },
+    {
+      "seq": 16,
+      "title": "接近闭爪高度",
+      "explanation": "在闭爪前保持目标不变，等待实测姿态稳定。",
+      "stage": "approach",
+      "env_step": 630,
+      "elapsed_s": 373.126,
+      "captured_at": "2026-09-19T10:59:59.378092+00:00",
+      "state": {
+        "left_j0": -0.7113,
+        "left_j1": 1.7107,
+        "left_j2": 1.0584,
+        "left_j3": -0.337,
+        "left_j4": 0.0082,
+        "left_j5": 0.0341,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7081,
+        "left_j1": 1.7203,
+        "left_j2": 1.0494,
+        "left_j3": -0.3649,
+        "left_j4": 0.0124,
+        "left_j5": 0.0467,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1605,
+            -0.2228,
+            0.0196
+          ],
+          "ee_rpy": [
+            0.022,
+            0.989,
+            -0.726
+          ],
+          "tip_xyz": [
+            0.2386,
+            -0.2921,
+            -0.1392
+          ],
+          "ee_above_table": 0.1831,
+          "tip_above_table": 0.0243
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/16-fixed.webp",
+        "wrist": "images/16-wrist.webp"
+      },
+      "thumbnail": "thumbs/16.webp",
+      "next_command": {
+        "op": "hold",
+        "note": "fresh observation",
+        "id": 16
+      },
+      "reply": {
+        "ok": true,
+        "op": "hold",
+        "steps": 1,
+        "seconds": 0.05,
+        "cmd": 16,
+        "obs_seq": 16
+      },
+      "next_observation": 17,
+      "replay_s": 31.5
+    },
+    {
+      "seq": 17,
+      "title": "等待稳定，再测桌面间隙",
+      "explanation": "基于新深度仅再下降 3.5 mm，同时保留桌面安全余量。",
+      "stage": "approach",
+      "env_step": 631,
+      "elapsed_s": 402.244,
+      "captured_at": "2026-09-19T11:00:28.496160+00:00",
+      "state": {
+        "left_j0": -0.7116,
+        "left_j1": 1.7157,
+        "left_j2": 1.0531,
+        "left_j3": -0.3347,
+        "left_j4": 0.0082,
+        "left_j5": 0.0345,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7081,
+        "left_j1": 1.7203,
+        "left_j2": 1.0494,
+        "left_j3": -0.3649,
+        "left_j4": 0.0124,
+        "left_j5": 0.0467,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1601,
+            -0.2227,
+            0.0166
+          ],
+          "ee_rpy": [
+            0.022,
+            0.997,
+            -0.727
+          ],
+          "tip_xyz": [
+            0.2372,
+            -0.2912,
+            -0.143
+          ],
+          "ee_above_table": 0.1801,
+          "tip_above_table": 0.0205
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/17-fixed.webp",
+        "wrist": "images/17-wrist.webp"
+      },
+      "thumbnail": "thumbs/17.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7081766282305969,
+          "left_j1": 1.7261333753167005,
+          "left_j2": 1.0409841639050195,
+          "left_j3": -0.35065154162206313,
+          "left_j4": 0.012358229121368578,
+          "left_j5": 0.046630437990437194
+        },
+        "note": "Fresh depth shows 18 mm physical fingertip clearance; lower only 3.5 mm, preserving the conservative nominal clearance gate before closing around the cube sides",
+        "id": 17
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 4,
+        "start": {
+          "left_j0": -0.7081,
+          "left_j1": 1.7203,
+          "left_j2": 1.0494,
+          "left_j3": -0.3649,
+          "left_j4": 0.0124,
+          "left_j5": 0.0467
+        },
+        "seconds": 0.2,
+        "target": {
+          "left_j0": -0.7082,
+          "left_j1": 1.7261,
+          "left_j2": 1.041,
+          "left_j3": -0.3507,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0091
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.1544
+            ],
+            "ee_above_table": 0.1726,
+            "tip_above_table": 0.0091
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1601,
+              -0.2227,
+              0.0131
+            ],
+            "ee_rpy": [
+              0.022,
+              0.997,
+              -0.727
+            ],
+            "tip_xyz": [
+              0.2372,
+              -0.2912,
+              -0.1465
+            ],
+            "ee_above_table": 0.1766,
+            "tip_above_table": 0.017
+          }
+        },
+        "cmd": 17,
+        "obs_seq": 17
+      },
+      "next_observation": 18,
+      "replay_s": 31.55,
+      "depth": {
+        "image": "images/17-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.8219,
+        "source_sha256": "8d1bd1a86f58965a2989612842e2b4e4eedd093ee211f4da378975f7e28278c9",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 18,
+      "title": "最后下降 3.5 mm",
+      "explanation": "先缓慢收拢到中间开度，观察两指与木块的相对位置。",
+      "stage": "approach",
+      "env_step": 635,
+      "elapsed_s": 421.442,
+      "captured_at": "2026-09-19T11:00:47.693802+00:00",
+      "state": {
+        "left_j0": -0.7116,
+        "left_j1": 1.7164,
+        "left_j2": 1.0492,
+        "left_j3": -0.3244,
+        "left_j4": 0.0082,
+        "left_j5": 0.0345,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.7261,
+        "left_j2": 1.041,
+        "left_j3": -0.3507,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1603,
+            -0.2228,
+            0.0158
+          ],
+          "ee_rpy": [
+            0.022,
+            0.992,
+            -0.727
+          ],
+          "tip_xyz": [
+            0.238,
+            -0.2919,
+            -0.1432
+          ],
+          "ee_above_table": 0.1793,
+          "tip_above_table": 0.0203
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/18-fixed.webp",
+        "wrist": "images/18-wrist.webp"
+      },
+      "thumbnail": "thumbs/18.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_gripper": 0.6
+        },
+        "note": "Cube top is centered between the open pads; close gradually to an intermediate opening and inspect contact before the final grip",
+        "id": 18
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 26,
+        "start": {
+          "left_gripper": 1.0
+        },
+        "seconds": 1.3,
+        "target": {
+          "left_gripper": 0.6
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0091
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.1544
+            ],
+            "ee_above_table": 0.1726,
+            "tip_above_table": 0.0091
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1603,
+              -0.2228,
+              0.0158
+            ],
+            "ee_rpy": [
+              0.022,
+              0.992,
+              -0.727
+            ],
+            "tip_xyz": [
+              0.238,
+              -0.2919,
+              -0.1432
+            ],
+            "ee_above_table": 0.1793,
+            "tip_above_table": 0.0203
+          }
+        },
+        "cmd": 18,
+        "obs_seq": 18
+      },
+      "next_observation": 19,
+      "replay_s": 31.75
+    },
+    {
+      "seq": 19,
+      "title": "先收拢到中间开度",
+      "explanation": "两指位于木块两侧，随后继续闭合到抓取目标。",
+      "stage": "grasp",
+      "env_step": 661,
+      "elapsed_s": 436.016,
+      "captured_at": "2026-09-19T11:01:02.267606+00:00",
+      "state": {
+        "left_j0": -0.7113,
+        "left_j1": 1.7226,
+        "left_j2": 1.0458,
+        "left_j3": -0.3214,
+        "left_j4": 0.0082,
+        "left_j5": 0.0345,
+        "left_gripper": 0.5943
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.7261,
+        "left_j2": 1.041,
+        "left_j3": -0.3507,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.6
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1604,
+            -0.2227,
+            0.013
+          ],
+          "ee_rpy": [
+            0.022,
+            0.998,
+            -0.726
+          ],
+          "tip_xyz": [
+            0.2374,
+            -0.2911,
+            -0.1466
+          ],
+          "ee_above_table": 0.1765,
+          "tip_above_table": 0.0169
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/19-fixed.webp",
+        "wrist": "images/19-wrist.webp"
+      },
+      "thumbnail": "thumbs/19.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_gripper": 0.25
+        },
+        "note": "Both pads bracket the cube without pushing it; close to the previously used grasp target, then validate retention with a short lift",
+        "id": 19
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 22,
+        "start": {
+          "left_gripper": 0.6
+        },
+        "seconds": 1.1,
+        "target": {
+          "left_gripper": 0.25
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0091
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.732
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.1544
+            ],
+            "ee_above_table": 0.1726,
+            "tip_above_table": 0.0091
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1604,
+              -0.2227,
+              0.013
+            ],
+            "ee_rpy": [
+              0.022,
+              0.998,
+              -0.726
+            ],
+            "tip_xyz": [
+              0.2374,
+              -0.2911,
+              -0.1466
+            ],
+            "ee_above_table": 0.1765,
+            "tip_above_table": 0.0169
+          }
+        },
+        "cmd": 19,
+        "obs_seq": 19
+      },
+      "next_observation": 20,
+      "replay_s": 33.05
+    },
+    {
+      "seq": 20,
+      "title": "两指夹住木块",
+      "explanation": "闭爪画面只是抓取候选，下一步先小幅抬起验证。",
+      "stage": "grasp",
+      "env_step": 683,
+      "elapsed_s": 455.655,
+      "captured_at": "2026-09-19T11:01:21.906572+00:00",
+      "state": {
+        "left_j0": -0.7116,
+        "left_j1": 1.7226,
+        "left_j2": 1.0458,
+        "left_j3": -0.3214,
+        "left_j4": 0.009,
+        "left_j5": 0.0345,
+        "left_gripper": 0.2508
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.7261,
+        "left_j2": 1.041,
+        "left_j3": -0.3507,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1603,
+            -0.2228,
+            0.013
+          ],
+          "ee_rpy": [
+            0.021,
+            0.998,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2372,
+            -0.2914,
+            -0.1466
+          ],
+          "ee_above_table": 0.1765,
+          "tip_above_table": 0.0169
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/20-fixed.webp",
+        "wrist": "images/20-wrist.webp"
+      },
+      "thumbnail": "thumbs/20.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7082036583194415,
+          "left_j1": 1.695206330314567,
+          "left_j2": 1.0914367676419965,
+          "left_j3": -0.4320283576808348,
+          "left_j4": 0.012398007436563907,
+          "left_j5": 0.04659666472526118
+        },
+        "note": "Jaws are closed around the cube; lift only 2 cm to test whether the cube stays in the fingers. Do not transport until camera evidence confirms retention.",
+        "id": 20
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.7082,
+          "left_j1": 1.7261,
+          "left_j2": 1.041,
+          "left_j3": -0.3507,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6952,
+          "left_j2": 1.0914,
+          "left_j3": -0.432,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0291
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.733
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.1344
+            ],
+            "ee_above_table": 0.1926,
+            "tip_above_table": 0.0291
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1602,
+              -0.2227,
+              0.0331
+            ],
+            "ee_rpy": [
+              0.021,
+              0.998,
+              -0.728
+            ],
+            "tip_xyz": [
+              0.237,
+              -0.2913,
+              -0.1266
+            ],
+            "ee_above_table": 0.1966,
+            "tip_above_table": 0.0369
+          }
+        },
+        "cmd": 20,
+        "obs_seq": 20
+      },
+      "next_observation": 21,
+      "replay_s": 34.15
+    },
+    {
+      "seq": 21,
+      "title": "第一次短距离抬升",
+      "explanation": "木块仍保持在两指之间，但还需要停稳和继续抬升来确认。",
+      "stage": "verify",
+      "env_step": 704,
+      "elapsed_s": 466.123,
+      "captured_at": "2026-09-19T11:01:32.375078+00:00",
+      "state": {
+        "left_j0": -0.7113,
+        "left_j1": 1.7134,
+        "left_j2": 1.0698,
+        "left_j3": -0.3782,
+        "left_j4": 0.009,
+        "left_j5": 0.0349,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.6952,
+        "left_j2": 1.0914,
+        "left_j3": -0.432,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1597,
+            -0.2221,
+            0.0198
+          ],
+          "ee_rpy": [
+            0.02,
+            1.022,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.2337,
+            -0.2882,
+            -0.1422
+          ],
+          "ee_above_table": 0.1833,
+          "tip_above_table": 0.0213
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/21-fixed.webp",
+        "wrist": "images/21-wrist.webp"
+      },
+      "thumbnail": "thumbs/21.webp",
+      "next_command": {
+        "op": "hold",
+        "note": "fresh observation",
+        "id": 21
+      },
+      "reply": {
+        "ok": true,
+        "op": "hold",
+        "steps": 1,
+        "seconds": 0.05,
+        "cmd": 21,
+        "obs_seq": 21
+      },
+      "next_observation": 22,
+      "replay_s": 35.2,
+      "depth": {
+        "image": "images/21-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.729,
+        "source_sha256": "f380ff29869fc5f09b1413e47365840d711979462d4a5400a57662d74f927e15",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 22,
+      "title": "停住，确认木块仍在指间",
+      "explanation": "重新观察后，木块相对夹爪的位置未明显改变。",
+      "stage": "verify",
+      "env_step": 705,
+      "elapsed_s": 498.067,
+      "captured_at": "2026-09-19T11:02:04.319260+00:00",
+      "state": {
+        "left_j0": -0.7113,
+        "left_j1": 1.7092,
+        "left_j2": 1.0786,
+        "left_j3": -0.3847,
+        "left_j4": 0.009,
+        "left_j5": 0.0345,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.6952,
+        "left_j2": 1.0914,
+        "left_j3": -0.432,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1602,
+            -0.2226,
+            0.0233
+          ],
+          "ee_rpy": [
+            0.02,
+            1.015,
+            -0.728
+          ],
+          "tip_xyz": [
+            0.235,
+            -0.2893,
+            -0.1381
+          ],
+          "ee_above_table": 0.1868,
+          "tip_above_table": 0.0254
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/22-fixed.webp",
+        "wrist": "images/22-wrist.webp"
+      },
+      "thumbnail": "thumbs/22.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7082036613285746,
+          "left_j1": 1.6705546731095624,
+          "left_j2": 1.1473225048689826,
+          "left_j3": -0.5125655734854222,
+          "left_j4": 0.012398006342250717,
+          "left_j5": 0.04659666033980266
+        },
+        "note": "Cube remains fixed between the pads after the first lift, with depth about 0.106 m; raise another 2 cm vertically to confirm sustained clearance before any lateral transport",
+        "id": 22
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6952,
+          "left_j2": 1.0914,
+          "left_j3": -0.432,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6706,
+          "left_j2": 1.1473,
+          "left_j3": -0.5126,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.0491
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.733
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.1144
+            ],
+            "ee_above_table": 0.2126,
+            "tip_above_table": 0.0491
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1606,
+              -0.2229,
+              0.0432
+            ],
+            "ee_rpy": [
+              0.02,
+              1.015,
+              -0.728
+            ],
+            "tip_xyz": [
+              0.2354,
+              -0.2896,
+              -0.1182
+            ],
+            "ee_above_table": 0.2067,
+            "tip_above_table": 0.0453
+          }
+        },
+        "cmd": 22,
+        "obs_seq": 22
+      },
+      "next_observation": 23,
+      "replay_s": 35.25
+    },
+    {
+      "seq": 23,
+      "title": "第二次短距离抬升",
+      "explanation": "木块继续随夹爪抬升，尚不急于横向搬运。",
+      "stage": "verify",
+      "env_step": 726,
+      "elapsed_s": 499.668,
+      "captured_at": "2026-09-19T11:02:05.919667+00:00",
+      "state": {
+        "left_j0": -0.7086,
+        "left_j1": 1.6913,
+        "left_j2": 1.1236,
+        "left_j3": -0.4583,
+        "left_j4": 0.0086,
+        "left_j5": 0.0341,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.6706,
+        "left_j2": 1.1473,
+        "left_j3": -0.5126,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1608,
+            -0.2219,
+            0.0383
+          ],
+          "ee_rpy": [
+            0.02,
+            1.026,
+            -0.725
+          ],
+          "tip_xyz": [
+            0.2345,
+            -0.2872,
+            -0.1242
+          ],
+          "ee_above_table": 0.2018,
+          "tip_above_table": 0.0393
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/23-fixed.webp",
+        "wrist": "images/23-wrist.webp"
+      },
+      "thumbnail": "thumbs/23.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7082036599463482,
+          "left_j1": 1.6484349324969427,
+          "left_j2": 1.224880535259319,
+          "left_j3": -0.6123422594451309,
+          "left_j4": 0.012398010858568188,
+          "left_j5": 0.04659665108363159
+        },
+        "note": "The cube stays in the same location against both pads after a second lift; gain another 2.5 cm of clearance before crossing toward the plate",
+        "id": 23
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 25,
+        "start": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6706,
+          "left_j2": 1.1473,
+          "left_j3": -0.5126,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "seconds": 1.25,
+        "target": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6484,
+          "left_j2": 1.2249,
+          "left_j3": -0.6123,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1587,
+              -0.22,
+              0.074
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.733
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.0894
+            ],
+            "ee_above_table": 0.2375,
+            "tip_above_table": 0.0741
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1617,
+              -0.2226,
+              0.0631
+            ],
+            "ee_rpy": [
+              0.02,
+              1.026,
+              -0.725
+            ],
+            "tip_xyz": [
+              0.2353,
+              -0.2879,
+              -0.0994
+            ],
+            "ee_above_table": 0.2266,
+            "tip_above_table": 0.0641
+          }
+        },
+        "cmd": 23,
+        "obs_seq": 23
+      },
+      "next_observation": 24,
+      "replay_s": 36.3
+    },
+    {
+      "seq": 24,
+      "title": "继续抬高，木块离桌",
+      "explanation": "固定相机可见木块离开桌面，继续留出越过盘沿的高度。",
+      "stage": "verify",
+      "env_step": 751,
+      "elapsed_s": 515.213,
+      "captured_at": "2026-09-19T11:02:21.464892+00:00",
+      "state": {
+        "left_j0": -0.7074,
+        "left_j1": 1.6718,
+        "left_j2": 1.1995,
+        "left_j3": -0.561,
+        "left_j4": 0.0086,
+        "left_j5": 0.033,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.6484,
+        "left_j2": 1.2249,
+        "left_j3": -0.6123,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1618,
+            -0.2222,
+            0.0616
+          ],
+          "ee_rpy": [
+            0.019,
+            1.033,
+            -0.724
+          ],
+          "tip_xyz": [
+            0.2347,
+            -0.2867,
+            -0.1016
+          ],
+          "ee_above_table": 0.2251,
+          "tip_above_table": 0.0619
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/24-fixed.webp",
+        "wrist": "images/24-wrist.webp"
+      },
+      "thumbnail": "thumbs/24.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.7082036985673248,
+          "left_j1": 1.6356812013978808,
+          "left_j2": 1.3112032722086724,
+          "left_j3": -0.711318080564549,
+          "left_j4": 0.012397991689705613,
+          "left_j5": 0.046596610429606625
+        },
+        "note": "Fixed view confirms the cube has left the table and remains suspended in the jaws; raise another 2.5 cm to clear the plate rim during transport",
+        "id": 24
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 25,
+        "start": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6484,
+          "left_j2": 1.2249,
+          "left_j3": -0.6123,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "seconds": 1.25,
+        "target": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6357,
+          "left_j2": 1.3112,
+          "left_j3": -0.7113,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1586,
+              -0.22,
+              0.099
+            ],
+            "ee_rpy": [
+              0.026,
+              1.036,
+              -0.733
+            ],
+            "tip_xyz": [
+              0.2307,
+              -0.2848,
+              -0.0644
+            ],
+            "ee_above_table": 0.2625,
+            "tip_above_table": 0.0991
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1627,
+              -0.223,
+              0.0865
+            ],
+            "ee_rpy": [
+              0.019,
+              1.033,
+              -0.724
+            ],
+            "tip_xyz": [
+              0.2356,
+              -0.2875,
+              -0.0767
+            ],
+            "ee_above_table": 0.25,
+            "tip_above_table": 0.0868
+          }
+        },
+        "cmd": 24,
+        "obs_seq": 24
+      },
+      "next_observation": 25,
+      "replay_s": 37.55
+    },
+    {
+      "seq": 25,
+      "title": "获得搬运所需间隙",
+      "explanation": "连续抬升后木块仍在指间，开始分段搬运。",
+      "stage": "verify",
+      "env_step": 776,
+      "elapsed_s": 530.145,
+      "captured_at": "2026-09-19T11:02:36.396621+00:00",
+      "state": {
+        "left_j0": -0.7074,
+        "left_j1": 1.6566,
+        "left_j2": 1.2858,
+        "left_j3": -0.6617,
+        "left_j4": 0.009,
+        "left_j5": 0.0334,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.7082,
+        "left_j1": 1.6357,
+        "left_j2": 1.3112,
+        "left_j3": -0.7113,
+        "left_j4": 0.0124,
+        "left_j5": 0.0466,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1623,
+            -0.2227,
+            0.0872
+          ],
+          "ee_rpy": [
+            0.018,
+            1.032,
+            -0.725
+          ],
+          "tip_xyz": [
+            0.2352,
+            -0.2873,
+            -0.076
+          ],
+          "ee_above_table": 0.2507,
+          "tip_above_table": 0.0875
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/25-fixed.webp",
+        "wrist": "images/25-wrist.webp"
+      },
+      "thumbnail": "thumbs/25.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.4814204774554796,
+          "left_j1": 1.553568445497933,
+          "left_j2": 1.2698974600126014,
+          "left_j3": -0.7196306749160422,
+          "left_j4": 0.003390095993038289,
+          "left_j5": 0.01318457522164333
+        },
+        "note": "Cube is securely retained after successive vertical lifts; move slowly through a high intermediate waypoint toward the blue plate while maintaining the grip",
+        "id": 25
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 57,
+        "start": {
+          "left_j0": -0.7082,
+          "left_j1": 1.6357,
+          "left_j2": 1.3112,
+          "left_j3": -0.7113,
+          "left_j4": 0.0124,
+          "left_j5": 0.0466
+        },
+        "seconds": 2.85,
+        "target": {
+          "left_j0": -0.4814,
+          "left_j1": 1.5536,
+          "left_j2": 1.2699,
+          "left_j3": -0.7196,
+          "left_j4": 0.0034,
+          "left_j5": 0.0132
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1854,
+              -0.148,
+              0.1114
+            ],
+            "ee_rpy": [
+              0.008,
+              1.003,
+              -0.488
+            ],
+            "tip_xyz": [
+              0.2756,
+              -0.1959,
+              -0.0488
+            ],
+            "ee_above_table": 0.2749,
+            "tip_above_table": 0.1147
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.19,
+              -0.15,
+              0.1
+            ],
+            "ee_rpy": [
+              0.0,
+              1.0,
+              -0.481
+            ],
+            "tip_xyz": [
+              0.281,
+              -0.1975,
+              -0.0599
+            ],
+            "ee_above_table": 0.2635,
+            "tip_above_table": 0.1036
+          }
+        },
+        "cmd": 25,
+        "obs_seq": 25
+      },
+      "next_observation": 26,
+      "replay_s": 38.8
+    },
+    {
+      "seq": 26,
+      "title": "移动到中间位置",
+      "explanation": "第一段横移后木块仍被夹住，继续移向盘子中心。",
+      "stage": "transfer",
+      "env_step": 833,
+      "elapsed_s": 557.286,
+      "captured_at": "2026-09-19T11:03:03.537498+00:00",
+      "state": {
+        "left_j0": -0.4889,
+        "left_j1": 1.5707,
+        "left_j2": 1.2751,
+        "left_j3": -0.6674,
+        "left_j4": 0.0074,
+        "left_j5": 0.0139,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.4814,
+        "left_j1": 1.5536,
+        "left_j2": 1.2699,
+        "left_j3": -0.7196,
+        "left_j4": 0.0034,
+        "left_j5": 0.0132,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.191,
+            -0.1538,
+            0.1106
+          ],
+          "ee_rpy": [
+            0.003,
+            0.963,
+            -0.502
+          ],
+          "tip_xyz": [
+            0.2861,
+            -0.206,
+            -0.0453
+          ],
+          "ee_above_table": 0.2741,
+          "tip_above_table": 0.1182
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/26-fixed.webp",
+        "wrist": "images/26-wrist.webp"
+      },
+      "thumbnail": "thumbs/26.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.25015772466907776,
+          "left_j1": 1.5920683461200094,
+          "left_j2": 1.2747635601105471,
+          "left_j3": -0.722890935930999,
+          "left_j4": -0.0040028221312493435,
+          "left_j5": -0.0007043947065234577
+        },
+        "note": "Cube remains held during the first transport segment; move to the estimated plate center at high clearance and verify alignment before lowering",
+        "id": 26
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 58,
+        "start": {
+          "left_j0": -0.4814,
+          "left_j1": 1.5536,
+          "left_j2": 1.2699,
+          "left_j3": -0.7196,
+          "left_j4": 0.0034,
+          "left_j5": 0.0132
+        },
+        "seconds": 2.9,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.5921,
+          "left_j2": 1.2748,
+          "left_j3": -0.7229,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2182,
+              -0.0806,
+              0.1011
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.0628
+            ],
+            "ee_above_table": 0.2646,
+            "tip_above_table": 0.1007
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2249,
+              -0.085,
+              0.1
+            ],
+            "ee_rpy": [
+              -0.0,
+              1.0,
+              -0.258
+            ],
+            "tip_xyz": [
+              0.3242,
+              -0.1112,
+              -0.0599
+            ],
+            "ee_above_table": 0.2635,
+            "tip_above_table": 0.1036
+          }
+        },
+        "cmd": 26,
+        "obs_seq": 26
+      },
+      "next_observation": 27,
+      "replay_s": 41.65
+    },
+    {
+      "seq": 27,
+      "title": "到达蓝色盘子上方",
+      "explanation": "两路画面支持木块位于盘子内部上方，开始降低高度。",
+      "stage": "transfer",
+      "env_step": 891,
+      "elapsed_s": 573.692,
+      "captured_at": "2026-09-19T11:03:19.943593+00:00",
+      "state": {
+        "left_j0": -0.2573,
+        "left_j1": 1.5845,
+        "left_j2": 1.2739,
+        "left_j3": -0.672,
+        "left_j4": -0.0002,
+        "left_j5": 0.0036,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.5921,
+        "left_j2": 1.2748,
+        "left_j3": -0.7229,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2204,
+            -0.0837,
+            0.1058
+          ],
+          "ee_rpy": [
+            0.004,
+            0.982,
+            -0.257
+          ],
+          "tip_xyz": [
+            0.3224,
+            -0.1105,
+            -0.0523
+          ],
+          "ee_above_table": 0.2693,
+          "tip_above_table": 0.1112
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/27-fixed.webp",
+        "wrist": "images/27-wrist.webp"
+      },
+      "thumbnail": "thumbs/27.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.2501877523992747,
+          "left_j1": 1.601025491441091,
+          "left_j2": 1.204486853385074,
+          "left_j3": -0.6436821755886436,
+          "left_j4": -0.003993281696100169,
+          "left_j5": -0.000689019203529336
+        },
+        "note": "Wrist view places the held cube over the plate interior with margin to all edges; begin a 2 cm controlled descent while retaining the grip",
+        "id": 27
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 20,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.5921,
+          "left_j2": 1.2748,
+          "left_j3": -0.7229,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 1.0,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.601,
+          "left_j2": 1.2045,
+          "left_j3": -0.6437,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2183,
+              -0.0806,
+              0.0812
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.0827
+            ],
+            "ee_above_table": 0.2447,
+            "tip_above_table": 0.0808
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2205,
+              -0.0837,
+              0.0859
+            ],
+            "ee_rpy": [
+              0.004,
+              0.983,
+              -0.257
+            ],
+            "tip_xyz": [
+              0.3225,
+              -0.1105,
+              -0.0722
+            ],
+            "ee_above_table": 0.2494,
+            "tip_above_table": 0.0913
+          }
+        },
+        "cmd": 27,
+        "obs_seq": 27
+      },
+      "next_observation": 28,
+      "replay_s": 44.55
+    },
+    {
+      "seq": 28,
+      "title": "在盘内上方下降",
+      "explanation": "保持夹持，分段降低，并检查夹爪与盘沿的相对位置。",
+      "stage": "place",
+      "env_step": 911,
+      "elapsed_s": 612.237,
+      "captured_at": "2026-09-19T11:03:58.488916+00:00",
+      "state": {
+        "left_j0": -0.2512,
+        "left_j1": 1.5955,
+        "left_j2": 1.2118,
+        "left_j3": -0.6201,
+        "left_j4": -0.0013,
+        "left_j5": 0.0002,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.601,
+        "left_j2": 1.2045,
+        "left_j3": -0.6437,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2201,
+            -0.0815,
+            0.0863
+          ],
+          "ee_rpy": [
+            0.002,
+            1.004,
+            -0.249
+          ],
+          "tip_xyz": [
+            0.319,
+            -0.1066,
+            -0.074
+          ],
+          "ee_above_table": 0.2498,
+          "tip_above_table": 0.0895
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/28-fixed.webp",
+        "wrist": "images/28-wrist.webp"
+      },
+      "thumbnail": "thumbs/28.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.2501877968016525,
+          "left_j1": 1.6159561391670614,
+          "left_j2": 1.1395487127369415,
+          "left_j3": -0.5638120248066736,
+          "left_j4": -0.003993305575062878,
+          "left_j5": -0.0006890512494614682
+        },
+        "note": "Cube remains held and centered over the plate; descend 2 cm more, keeping the fingers away from the rim",
+        "id": 28
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 20,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.601,
+          "left_j2": 1.2045,
+          "left_j3": -0.6437,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 1.0,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.616,
+          "left_j2": 1.1395,
+          "left_j3": -0.5638,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2183,
+              -0.0806,
+              0.0613
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.1026
+            ],
+            "ee_above_table": 0.2248,
+            "tip_above_table": 0.0609
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2204,
+              -0.0816,
+              0.0663
+            ],
+            "ee_rpy": [
+              0.002,
+              1.004,
+              -0.249
+            ],
+            "tip_xyz": [
+              0.3193,
+              -0.1067,
+              -0.094
+            ],
+            "ee_above_table": 0.2298,
+            "tip_above_table": 0.0695
+          }
+        },
+        "cmd": 28,
+        "obs_seq": 28
+      },
+      "next_observation": 29,
+      "replay_s": 45.55
+    },
+    {
+      "seq": 29,
+      "title": "继续下降，保持夹持",
+      "explanation": "盘子仍在木块下方，继续小步下降。",
+      "stage": "place",
+      "env_step": 931,
+      "elapsed_s": 623.741,
+      "captured_at": "2026-09-19T11:04:09.992603+00:00",
+      "state": {
+        "left_j0": -0.2512,
+        "left_j1": 1.6096,
+        "left_j2": 1.1454,
+        "left_j3": -0.5442,
+        "left_j4": -0.0025,
+        "left_j5": 0.0002,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.616,
+        "left_j2": 1.1395,
+        "left_j3": -0.5638,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2198,
+            -0.0814,
+            0.0659
+          ],
+          "ee_rpy": [
+            0.004,
+            1.008,
+            -0.247
+          ],
+          "tip_xyz": [
+            0.318,
+            -0.1061,
+            -0.0948
+          ],
+          "ee_above_table": 0.2294,
+          "tip_above_table": 0.0687
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/29-fixed.webp",
+        "wrist": "images/29-wrist.webp"
+      },
+      "thumbnail": "thumbs/29.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.25018784347899864,
+          "left_j1": 1.6371416417429752,
+          "left_j2": 1.079826761790985,
+          "left_j3": -0.48300358920007813,
+          "left_j4": -0.003993331044234656,
+          "left_j5": -0.000689086248297708
+        },
+        "note": "The plate remains beneath the cube and clear of both fingers; lower another 2 cm before measuring the final release height",
+        "id": 29
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.616,
+          "left_j2": 1.1395,
+          "left_j3": -0.5638,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6371,
+          "left_j2": 1.0798,
+          "left_j3": -0.483,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2183,
+              -0.0806,
+              0.0413
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.1225
+            ],
+            "ee_above_table": 0.2048,
+            "tip_above_table": 0.041
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.22,
+              -0.0815,
+              0.046
+            ],
+            "ee_rpy": [
+              0.004,
+              1.009,
+              -0.247
+            ],
+            "tip_xyz": [
+              0.3183,
+              -0.1062,
+              -0.1148
+            ],
+            "ee_above_table": 0.2095,
+            "tip_above_table": 0.0487
+          }
+        },
+        "cmd": 29,
+        "obs_seq": 29
+      },
+      "next_observation": 30,
+      "replay_s": 46.55
+    },
+    {
+      "seq": 30,
+      "title": "接近放置高度",
+      "explanation": "下降后先保持，再用深度核对盘底距离。",
+      "stage": "place",
+      "env_step": 952,
+      "elapsed_s": 636.011,
+      "captured_at": "2026-09-19T11:04:22.262585+00:00",
+      "state": {
+        "left_j0": -0.2512,
+        "left_j1": 1.6295,
+        "left_j2": 1.087,
+        "left_j3": -0.4614,
+        "left_j4": -0.0025,
+        "left_j5": 0.0002,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.6371,
+        "left_j2": 1.0798,
+        "left_j3": -0.483,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2202,
+            -0.0815,
+            0.0469
+          ],
+          "ee_rpy": [
+            0.004,
+            1.004,
+            -0.247
+          ],
+          "tip_xyz": [
+            0.3192,
+            -0.1064,
+            -0.1134
+          ],
+          "ee_above_table": 0.2104,
+          "tip_above_table": 0.0501
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/30-fixed.webp",
+        "wrist": "images/30-wrist.webp"
+      },
+      "thumbnail": "thumbs/30.webp",
+      "next_command": {
+        "op": "hold",
+        "note": "fresh observation",
+        "id": 30
+      },
+      "reply": {
+        "ok": true,
+        "op": "hold",
+        "steps": 1,
+        "seconds": 0.05,
+        "cmd": 30,
+        "obs_seq": 30
+      },
+      "next_observation": 31,
+      "replay_s": 47.6
+    },
+    {
+      "seq": 31,
+      "title": "停住，核验盘底深度",
+      "explanation": "深度读数：木块顶面约 0.106 m、盘底约 0.164 m；用于选择最后的下降量。",
+      "stage": "place",
+      "env_step": 953,
+      "elapsed_s": 653.149,
+      "captured_at": "2026-09-19T11:04:39.400974+00:00",
+      "state": {
+        "left_j0": -0.2512,
+        "left_j1": 1.6329,
+        "left_j2": 1.0828,
+        "left_j3": -0.4526,
+        "left_j4": -0.0025,
+        "left_j5": 0.0002,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.6371,
+        "left_j2": 1.0798,
+        "left_j3": -0.483,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2207,
+            -0.0816,
+            0.0451
+          ],
+          "ee_rpy": [
+            0.004,
+            1.003,
+            -0.247
+          ],
+          "tip_xyz": [
+            0.3198,
+            -0.1066,
+            -0.1151
+          ],
+          "ee_above_table": 0.2086,
+          "tip_above_table": 0.0484
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/31-fixed.webp",
+        "wrist": "images/31-wrist.webp"
+      },
+      "thumbnail": "thumbs/31.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.25018760335365575,
+          "left_j1": 1.6571374104207788,
+          "left_j2": 1.038542366874582,
+          "left_j3": -0.4217187460529487,
+          "left_j4": -0.003993226771383844,
+          "left_j5": -0.0006888520382732922
+        },
+        "note": "Depth measures cube top at 0.106 m and plate floor at 0.164 m; lower 15 mm, leaving about 1–2 cm beneath the cube before release",
+        "id": 31
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 16,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6371,
+          "left_j2": 1.0798,
+          "left_j3": -0.483,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 0.8,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6571,
+          "left_j2": 1.0385,
+          "left_j3": -0.4217,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2183,
+              -0.0806,
+              0.0264
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.1375
+            ],
+            "ee_above_table": 0.1899,
+            "tip_above_table": 0.026
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2208,
+              -0.0816,
+              0.0301
+            ],
+            "ee_rpy": [
+              0.004,
+              1.003,
+              -0.247
+            ],
+            "tip_xyz": [
+              0.3199,
+              -0.1066,
+              -0.1301
+            ],
+            "ee_above_table": 0.1936,
+            "tip_above_table": 0.0334
+          }
+        },
+        "cmd": 31,
+        "obs_seq": 31
+      },
+      "next_observation": 32,
+      "replay_s": 47.65,
+      "depth": {
+        "image": "images/31-depth.webp",
+        "min_m": 0.05,
+        "max_m": 0.35,
+        "valid_fraction": 0.726,
+        "source_sha256": "48f56c0c369cbfffb7b69c6b69213a041cfa149f2b99067e37b6f2c09b08f4f9",
+        "note": "姿态保持期间额外采集；不是每次策略观测都包含深度。"
+      }
+    },
+    {
+      "seq": 32,
+      "title": "最后下降 15 mm",
+      "explanation": "木块低位悬在盘子内部上方，下一条缓慢张爪。",
+      "stage": "place",
+      "env_step": 969,
+      "elapsed_s": 666.253,
+      "captured_at": "2026-09-19T11:04:52.504920+00:00",
+      "state": {
+        "left_j0": -0.2512,
+        "left_j1": 1.6512,
+        "left_j2": 1.0473,
+        "left_j3": -0.3988,
+        "left_j4": -0.0029,
+        "left_j5": 0.0002,
+        "left_gripper": 0.235
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.6571,
+        "left_j2": 1.0385,
+        "left_j3": -0.4217,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 0.25
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.221,
+            -0.0817,
+            0.0319
+          ],
+          "ee_rpy": [
+            0.005,
+            1.003,
+            -0.246
+          ],
+          "tip_xyz": [
+            0.3201,
+            -0.1066,
+            -0.1283
+          ],
+          "ee_above_table": 0.1954,
+          "tip_above_table": 0.0352
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/32-fixed.webp",
+        "wrist": "images/32-wrist.webp"
+      },
+      "thumbnail": "thumbs/32.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_gripper": 1.0
+        },
+        "note": "Cube is low over the plate interior and the jaws clear the rim; open slowly to release it, then inspect the plate before withdrawing",
+        "id": 32
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 47,
+        "start": {
+          "left_gripper": 0.25
+        },
+        "seconds": 2.35,
+        "target": {
+          "left_gripper": 1.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2183,
+              -0.0806,
+              0.0264
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.1375
+            ],
+            "ee_above_table": 0.1899,
+            "tip_above_table": 0.026
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.221,
+              -0.0817,
+              0.0319
+            ],
+            "ee_rpy": [
+              0.005,
+              1.003,
+              -0.246
+            ],
+            "tip_xyz": [
+              0.3201,
+              -0.1066,
+              -0.1283
+            ],
+            "ee_above_table": 0.1954,
+            "tip_above_table": 0.0352
+          }
+        },
+        "cmd": 32,
+        "obs_seq": 32
+      },
+      "next_observation": 33,
+      "replay_s": 48.45
+    },
+    {
+      "seq": 33,
+      "title": "已松爪：木块留在盘内",
+      "explanation": "两路图像显示木块已留在盘中；先竖直抬起空夹爪验证它不会被带走。",
+      "stage": "place",
+      "env_step": 1016,
+      "elapsed_s": 678.523,
+      "captured_at": "2026-09-19T11:05:04.775232+00:00",
+      "state": {
+        "left_j0": -0.2512,
+        "left_j1": 1.6524,
+        "left_j2": 1.042,
+        "left_j3": -0.3893,
+        "left_j4": -0.0029,
+        "left_j5": 0.0002,
+        "left_gripper": 0.964
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.6571,
+        "left_j2": 1.0385,
+        "left_j3": -0.4217,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2209,
+            -0.0817,
+            0.0305
+          ],
+          "ee_rpy": [
+            0.005,
+            1.0,
+            -0.246
+          ],
+          "tip_xyz": [
+            0.3206,
+            -0.1067,
+            -0.1293
+          ],
+          "ee_above_table": 0.194,
+          "tip_above_table": 0.0342
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/33-fixed.webp",
+        "wrist": "images/33-wrist.webp"
+      },
+      "thumbnail": "thumbs/33.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.25019930530592527,
+          "left_j1": 1.6310928592378982,
+          "left_j2": 1.0944008518470811,
+          "left_j3": -0.5036060026906025,
+          "left_j4": -0.003999626547173623,
+          "left_j5": -0.000699365117358772
+        },
+        "note": "Both camera views show the released cube resting inside the blue plate and the jaws open; withdraw vertically 2 cm and verify it stays in place",
+        "id": 33
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 21,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6571,
+          "left_j2": 1.0385,
+          "left_j3": -0.4217,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 1.05,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6311,
+          "left_j2": 1.0944,
+          "left_j3": -0.5036,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2183,
+              -0.0806,
+              0.0464
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.1175
+            ],
+            "ee_above_table": 0.2099,
+            "tip_above_table": 0.046
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2208,
+              -0.0816,
+              0.0505
+            ],
+            "ee_rpy": [
+              0.005,
+              1.0,
+              -0.246
+            ],
+            "tip_xyz": [
+              0.3204,
+              -0.1066,
+              -0.1093
+            ],
+            "ee_above_table": 0.214,
+            "tip_above_table": 0.0542
+          }
+        },
+        "cmd": 33,
+        "obs_seq": 33
+      },
+      "next_observation": 34,
+      "replay_s": 50.8
+    },
+    {
+      "seq": 34,
+      "title": "竖直撤离，复核放置",
+      "explanation": "撤离后木块仍静止在盘内，继续抬高空夹爪。",
+      "stage": "return",
+      "env_step": 1037,
+      "elapsed_s": 689.96,
+      "captured_at": "2026-09-19T11:05:16.212236+00:00",
+      "state": {
+        "left_j0": -0.2508,
+        "left_j1": 1.6512,
+        "left_j2": 1.0748,
+        "left_j3": -0.453,
+        "left_j4": -0.0029,
+        "left_j5": -0.0002,
+        "left_gripper": 0.9805
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.6311,
+        "left_j2": 1.0944,
+        "left_j3": -0.5036,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2212,
+            -0.0816,
+            0.0371
+          ],
+          "ee_rpy": [
+            0.005,
+            1.029,
+            -0.245
+          ],
+          "tip_xyz": [
+            0.3162,
+            -0.1054,
+            -0.1258
+          ],
+          "ee_above_table": 0.2006,
+          "tip_above_table": 0.0377
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/34-fixed.webp",
+        "wrist": "images/34-wrist.webp"
+      },
+      "thumbnail": "thumbs/34.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.25019929287301435,
+          "left_j1": 1.6075379873763718,
+          "left_j2": 1.171788652533926,
+          "left_j3": -0.6045477220424882,
+          "left_j4": -0.003999620688423181,
+          "left_j5": -0.0006993509301195145
+        },
+        "note": "Cube stayed at rest in the plate after withdrawal; raise the empty open gripper another 2.5 cm to prepare a clear return path",
+        "id": 34
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 26,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6311,
+          "left_j2": 1.0944,
+          "left_j3": -0.5036,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 1.3,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6075,
+          "left_j2": 1.1718,
+          "left_j3": -0.6045,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2182,
+              -0.0806,
+              0.0714
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.0925
+            ],
+            "ee_above_table": 0.2349,
+            "tip_above_table": 0.071
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2221,
+              -0.0819,
+              0.0619
+            ],
+            "ee_rpy": [
+              0.005,
+              1.029,
+              -0.245
+            ],
+            "tip_xyz": [
+              0.3171,
+              -0.1056,
+              -0.1009
+            ],
+            "ee_above_table": 0.2254,
+            "tip_above_table": 0.0626
+          }
+        },
+        "cmd": 34,
+        "obs_seq": 34
+      },
+      "next_observation": 35,
+      "replay_s": 51.85
+    },
+    {
+      "seq": 35,
+      "title": "继续抬起空夹爪",
+      "explanation": "空夹爪逐步离开木块和盘沿。",
+      "stage": "return",
+      "env_step": 1063,
+      "elapsed_s": 705.666,
+      "captured_at": "2026-09-19T11:05:31.917414+00:00",
+      "state": {
+        "left_j0": -0.2504,
+        "left_j1": 1.6268,
+        "left_j2": 1.1511,
+        "left_j3": -0.5484,
+        "left_j4": -0.0029,
+        "left_j5": -0.0032,
+        "left_gripper": 0.9805
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.6075,
+        "left_j2": 1.1718,
+        "left_j3": -0.6045,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2224,
+            -0.0818,
+            0.0621
+          ],
+          "ee_rpy": [
+            0.001,
+            1.024,
+            -0.245
+          ],
+          "tip_xyz": [
+            0.3182,
+            -0.1057,
+            -0.1002
+          ],
+          "ee_above_table": 0.2256,
+          "tip_above_table": 0.0633
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/35-fixed.webp",
+        "wrist": "images/35-wrist.webp"
+      },
+      "thumbnail": "thumbs/35.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.25019928049107165,
+          "left_j1": 1.5936112726428564,
+          "left_j2": 1.257627560570181,
+          "left_j3": -0.7042128155591091,
+          "left_j4": -0.003999614493425994,
+          "left_j5": -0.0006993381841165713
+        },
+        "note": "Empty gripper clears the cube and the cube is still stable in the plate; gain 2.5 cm more clearance before retracting toward the base",
+        "id": 35
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 25,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.6075,
+          "left_j2": 1.1718,
+          "left_j3": -0.6045,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 1.25,
+        "target": {
+          "left_j0": -0.2502,
+          "left_j1": 1.5936,
+          "left_j2": 1.2576,
+          "left_j3": -0.7042,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2182,
+              -0.0806,
+              0.0964
+            ],
+            "ee_rpy": [
+              0.006,
+              1.04,
+              -0.242
+            ],
+            "tip_xyz": [
+              0.3116,
+              -0.1037,
+              -0.0675
+            ],
+            "ee_above_table": 0.2599,
+            "tip_above_table": 0.096
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.2233,
+              -0.082,
+              0.087
+            ],
+            "ee_rpy": [
+              0.001,
+              1.024,
+              -0.245
+            ],
+            "tip_xyz": [
+              0.3192,
+              -0.106,
+              -0.0753
+            ],
+            "ee_above_table": 0.2505,
+            "tip_above_table": 0.0882
+          }
+        },
+        "cmd": 35,
+        "obs_seq": 35
+      },
+      "next_observation": 36,
+      "replay_s": 53.15
+    },
+    {
+      "seq": 36,
+      "title": "获得回程间隙",
+      "explanation": "已有足够间隙，开始向基座方向撤回。",
+      "stage": "return",
+      "env_step": 1088,
+      "elapsed_s": 731.541,
+      "captured_at": "2026-09-19T11:05:57.793109+00:00",
+      "state": {
+        "left_j0": -0.2504,
+        "left_j1": 1.6146,
+        "left_j2": 1.2358,
+        "left_j3": -0.6521,
+        "left_j4": -0.0029,
+        "left_j5": -0.0036,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.2502,
+        "left_j1": 1.5936,
+        "left_j2": 1.2576,
+        "left_j3": -0.7042,
+        "left_j4": -0.004,
+        "left_j5": -0.0007,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.2231,
+            -0.082,
+            0.0859
+          ],
+          "ee_rpy": [
+            0.001,
+            1.031,
+            -0.245
+          ],
+          "tip_xyz": [
+            0.3178,
+            -0.1057,
+            -0.077
+          ],
+          "ee_above_table": 0.2494,
+          "tip_above_table": 0.0865
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/36-fixed.webp",
+        "wrist": "images/36-wrist.webp"
+      },
+      "thumbnail": "thumbs/36.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.35,
+          "left_j1": 1.2,
+          "left_j2": 1.2,
+          "left_j3": -0.9,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "Cube is stationary in the plate and the empty fingers are clear; retract upward to the known observation pose through a fully checked joint path",
+        "id": 36
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 99,
+        "start": {
+          "left_j0": -0.2502,
+          "left_j1": 1.5936,
+          "left_j2": 1.2576,
+          "left_j3": -0.7042,
+          "left_j4": -0.004,
+          "left_j5": -0.0007
+        },
+        "seconds": 4.95,
+        "target": {
+          "left_j0": -0.35,
+          "left_j1": 1.2,
+          "left_j2": 1.2,
+          "left_j3": -0.9,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1179,
+              -0.0787,
+              0.1703
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.9,
+              -0.35
+            ],
+            "tip_xyz": [
+              0.2288,
+              -0.1192,
+              0.0215
+            ],
+            "ee_above_table": 0.3338,
+            "tip_above_table": 0.185
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.1256,
+              -0.0816,
+              0.1623
+            ],
+            "ee_rpy": [
+              -0.004,
+              0.891,
+              -0.352
+            ],
+            "tip_xyz": [
+              0.2377,
+              -0.1228,
+              0.0145
+            ],
+            "ee_above_table": 0.3258,
+            "tip_above_table": 0.178
+          }
+        },
+        "cmd": 36,
+        "obs_seq": 36
+      },
+      "next_observation": 37,
+      "replay_s": 54.4
+    },
+    {
+      "seq": 37,
+      "title": "退回高处观察位",
+      "explanation": "回到观察位后再次看到木块留在盘内，然后按已检查路径收臂。",
+      "stage": "return",
+      "env_step": 1187,
+      "elapsed_s": 752.813,
+      "captured_at": "2026-09-19T11:06:19.064390+00:00",
+      "state": {
+        "left_j0": -0.3458,
+        "left_j1": 1.2228,
+        "left_j2": 1.2037,
+        "left_j3": -0.8371,
+        "left_j4": -0.001,
+        "left_j5": -0.0036,
+        "left_gripper": 0.9805
+      },
+      "last_commanded": {
+        "left_j0": -0.35,
+        "left_j1": 1.2,
+        "left_j2": 1.2,
+        "left_j3": -0.9,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.1276,
+            -0.0811,
+            0.1704
+          ],
+          "ee_rpy": [
+            -0.003,
+            0.856,
+            -0.344
+          ],
+          "tip_xyz": [
+            0.2448,
+            -0.1232,
+            0.0269
+          ],
+          "ee_above_table": 0.3339,
+          "tip_above_table": 0.1904
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/37-fixed.webp",
+        "wrist": "images/37-wrist.webp"
+      },
+      "thumbnail": "thumbs/37.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.23,
+          "left_j1": 0.8,
+          "left_j2": 0.8,
+          "left_j3": -0.57,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "Cube remains in the plate after retreat; reverse the tested high-clearance unfolding path, first intermediate folding waypoint",
+        "id": 37
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 101,
+        "start": {
+          "left_j0": -0.35,
+          "left_j1": 1.2,
+          "left_j2": 1.2,
+          "left_j3": -0.9,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "seconds": 5.05,
+        "target": {
+          "left_j0": -0.23,
+          "left_j1": 0.8,
+          "left_j2": 0.8,
+          "left_j3": -0.57,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0605,
+              -0.037,
+              0.1372
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.57,
+              -0.23
+            ],
+            "tip_xyz": [
+              0.2163,
+              -0.0735,
+              0.0347
+            ],
+            "ee_above_table": 0.3007,
+            "tip_above_table": 0.1982
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0682,
+              -0.0381,
+              0.1403
+            ],
+            "ee_rpy": [
+              -0.003,
+              0.526,
+              -0.225
+            ],
+            "tip_xyz": [
+              0.2283,
+              -0.0747,
+              0.0448
+            ],
+            "ee_above_table": 0.3038,
+            "tip_above_table": 0.2083
+          }
+        },
+        "cmd": 37,
+        "obs_seq": 37
+      },
+      "next_observation": 38,
+      "replay_s": 59.35
+    },
+    {
+      "seq": 38,
+      "title": "沿已检查路径收臂",
+      "explanation": "回程仍分段执行，每段检查新的画面与读回。",
+      "stage": "return",
+      "env_step": 1288,
+      "elapsed_s": 769.62,
+      "captured_at": "2026-09-19T11:06:35.871689+00:00",
+      "state": {
+        "left_j0": -0.2356,
+        "left_j1": 0.8112,
+        "left_j2": 0.8082,
+        "left_j3": -0.5316,
+        "left_j4": -0.0002,
+        "left_j5": -0.0036,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.23,
+        "left_j1": 0.8,
+        "left_j2": 0.8,
+        "left_j3": -0.57,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.0643,
+            -0.0389,
+            0.1414
+          ],
+          "ee_rpy": [
+            -0.004,
+            0.535,
+            -0.235
+          ],
+          "tip_xyz": [
+            0.2233,
+            -0.077,
+            0.0446
+          ],
+          "ee_above_table": 0.3049,
+          "tip_above_table": 0.2081
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/38-fixed.webp",
+        "wrist": "images/38-wrist.webp"
+      },
+      "thumbnail": "thumbs/38.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": -0.1,
+          "left_j1": 0.4,
+          "left_j2": 0.4,
+          "left_j3": -0.25,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "Continue folding along the already observed clear path; cube remains in the plate and the empty hand is away from it",
+        "id": 38
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 101,
+        "start": {
+          "left_j0": -0.23,
+          "left_j1": 0.8,
+          "left_j2": 0.8,
+          "left_j3": -0.57,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "seconds": 5.05,
+        "target": {
+          "left_j0": -0.1,
+          "left_j1": 0.4,
+          "left_j2": 0.4,
+          "left_j3": -0.25,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0173,
+              -0.0115,
+              0.0789
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.25,
+              -0.1
+            ],
+            "tip_xyz": [
+              0.2004,
+              -0.0299,
+              0.0319
+            ],
+            "ee_above_table": 0.2424,
+            "tip_above_table": 0.1954
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0193,
+              -0.0124,
+              0.0842
+            ],
+            "ee_rpy": [
+              -0.004,
+              0.215,
+              -0.105
+            ],
+            "tip_xyz": [
+              0.2039,
+              -0.0319,
+              0.0437
+            ],
+            "ee_above_table": 0.2477,
+            "tip_above_table": 0.2072
+          }
+        },
+        "cmd": 38,
+        "obs_seq": 38
+      },
+      "next_observation": 39,
+      "replay_s": 64.4
+    },
+    {
+      "seq": 39,
+      "title": "继续收臂",
+      "explanation": "空夹爪远离目标，完成最后一段收臂。",
+      "stage": "return",
+      "env_step": 1389,
+      "elapsed_s": 784.388,
+      "captured_at": "2026-09-19T11:06:50.640086+00:00",
+      "state": {
+        "left_j0": -0.1043,
+        "left_j1": 0.4084,
+        "left_j2": 0.4084,
+        "left_j3": -0.2104,
+        "left_j4": -0.0006,
+        "left_j5": -0.004,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": -0.1,
+        "left_j1": 0.4,
+        "left_j2": 0.4,
+        "left_j3": -0.25,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            0.0189,
+            -0.0122,
+            0.0846
+          ],
+          "ee_rpy": [
+            -0.004,
+            0.21,
+            -0.104
+          ],
+          "tip_xyz": [
+            0.2038,
+            -0.0314,
+            0.045
+          ],
+          "ee_above_table": 0.2481,
+          "tip_above_table": 0.2085
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/39-fixed.webp",
+        "wrist": "images/39-wrist.webp"
+      },
+      "thumbnail": "thumbs/39.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_j0": 0.0,
+          "left_j1": 0.0,
+          "left_j2": 0.0,
+          "left_j3": 0.0,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "Final slow return to the folded joint pose; hand is empty and table objects remain untouched",
+        "id": 39
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 101,
+        "start": {
+          "left_j0": -0.1,
+          "left_j1": 0.4,
+          "left_j2": 0.4,
+          "left_j3": -0.25,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "seconds": 5.05,
+        "target": {
+          "left_j0": 0.0,
+          "left_j1": 0.0,
+          "left_j2": 0.0,
+          "left_j3": 0.0,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "ee_rpy": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "tip_xyz": [
+              0.19,
+              0.0,
+              0.0
+            ],
+            "ee_above_table": 0.1635,
+            "tip_above_table": 0.1635
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              -0.0001,
+              -0.0004,
+              0.006
+            ],
+            "ee_rpy": [
+              -0.004,
+              -0.04,
+              -0.004
+            ],
+            "tip_xyz": [
+              0.1898,
+              -0.0011,
+              0.0136
+            ],
+            "ee_above_table": 0.1695,
+            "tip_above_table": 0.1771
+          }
+        },
+        "cmd": 39,
+        "obs_seq": 39
+      },
+      "next_observation": 40,
+      "replay_s": 69.45
+    },
+    {
+      "seq": 40,
+      "title": "回到折叠位",
+      "explanation": "六关节已回折叠位，随后闭合空夹爪。",
+      "stage": "return",
+      "env_step": 1490,
+      "elapsed_s": 799.727,
+      "captured_at": "2026-09-19T11:07:05.978506+00:00",
+      "state": {
+        "left_j0": -0.0048,
+        "left_j1": 0.009,
+        "left_j2": 0.0227,
+        "left_j3": 0.0376,
+        "left_j4": -0.0006,
+        "left_j5": -0.0036,
+        "left_gripper": 0.9804
+      },
+      "last_commanded": {
+        "left_j0": 0.0,
+        "left_j1": 0.0,
+        "left_j2": 0.0,
+        "left_j3": 0.0,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 1.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            -0.001,
+            -0.0004,
+            0.0107
+          ],
+          "ee_rpy": [
+            -0.004,
+            -0.051,
+            -0.004
+          ],
+          "tip_xyz": [
+            0.1888,
+            -0.0012,
+            0.0204
+          ],
+          "ee_above_table": 0.1742,
+          "tip_above_table": 0.1839
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/40-fixed.webp",
+        "wrist": "images/40-wrist.webp"
+      },
+      "thumbnail": "thumbs/40.webp",
+      "next_command": {
+        "op": "move",
+        "targets": {
+          "left_gripper": 0.0
+        },
+        "note": "Arm is back at the folded joint pose, empty gripper clear of objects; close the empty gripper for parking",
+        "id": 40
+      },
+      "reply": {
+        "ok": true,
+        "op": "move",
+        "steps": 63,
+        "start": {
+          "left_gripper": 1.0
+        },
+        "seconds": 3.15,
+        "target": {
+          "left_gripper": 0.0
+        },
+        "target_kinematics": {
+          "left": {
+            "ee_xyz": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "ee_rpy": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "tip_xyz": [
+              0.19,
+              0.0,
+              0.0
+            ],
+            "ee_above_table": 0.1635,
+            "tip_above_table": 0.1635
+          }
+        },
+        "predicted_kinematics": {
+          "left": {
+            "ee_xyz": [
+              -0.001,
+              -0.0004,
+              0.0107
+            ],
+            "ee_rpy": [
+              -0.004,
+              -0.051,
+              -0.004
+            ],
+            "tip_xyz": [
+              0.1888,
+              -0.0012,
+              0.0204
+            ],
+            "ee_above_table": 0.1742,
+            "tip_above_table": 0.1839
+          }
+        },
+        "cmd": 40,
+        "obs_seq": 40
+      },
+      "next_observation": 41,
+      "replay_s": 74.5
+    },
+    {
+      "seq": 41,
+      "title": "空夹爪闭合，准备结束",
+      "explanation": "末次策略观测：木块仍在盘内，随后发送 done 并正常释放 SDK。",
+      "stage": "return",
+      "env_step": 1553,
+      "elapsed_s": 815.164,
+      "captured_at": "2026-09-19T11:07:21.415326+00:00",
+      "state": {
+        "left_j0": -0.0017,
+        "left_j1": 0.0044,
+        "left_j2": 0.0223,
+        "left_j3": 0.038,
+        "left_j4": -0.0006,
+        "left_j5": -0.0036,
+        "left_gripper": 0.0032
+      },
+      "last_commanded": {
+        "left_j0": 0.0,
+        "left_j1": 0.0,
+        "left_j2": 0.0,
+        "left_j3": 0.0,
+        "left_j4": 0.0,
+        "left_j5": 0.0,
+        "left_gripper": 0.0
+      },
+      "kinematics": {
+        "left": {
+          "ee_xyz": [
+            -0.0013,
+            -0.0001,
+            0.0109
+          ],
+          "ee_rpy": [
+            -0.004,
+            -0.056,
+            -0.001
+          ],
+          "tip_xyz": [
+            0.1884,
+            -0.0004,
+            0.0216
+          ],
+          "ee_above_table": 0.1744,
+          "tip_above_table": 0.1851
+        }
+      },
+      "approvals": [],
+      "images": {
+        "fixed": "images/41-fixed.webp",
+        "wrist": "images/41-wrist.webp"
+      },
+      "thumbnail": "thumbs/41.webp",
+      "next_command": {
+        "op": "done",
+        "note": "Visually verified success: cube rests fully inside the blue plate after release and gripper withdrawal; arm returned to folded pose and empty gripper closed.",
+        "hindsight": "Use native wrist 640x480, wait for SDK feedback at connect, and override fingertip length to 0.19 m. Align from measured pose and depth, respect static joint offset, close gradually, verify retained cube by successive short vertical lifts, and check release in both views. Only issue explicit checked return motions; do not auto-park from an arbitrary low pose.",
+        "id": 41
+      },
+      "reply": {
+        "ok": true,
+        "op": "done",
+        "steps": 1,
+        "cmd": 41,
+        "obs_seq": 41
+      },
+      "next_observation": null,
+      "replay_s": 77.65
+    }
+  ],
+  "summary": {
+    "physical_success": true,
+    "grasp_attempts": 1,
+    "observation_count": 41,
+    "camera_image_count": 82,
+    "depth_checks": 7,
+    "move_commands": 36,
+    "hold_commands": 4,
+    "stop_commands": 1,
+    "executed_steps": 1553,
+    "framework_total_steps": 1554,
+    "wall_duration_s": 831.5984001809265,
+    "replay_fps": 20,
+    "replay_duration_s": 77.75,
+    "declared_control_hz": 20,
+    "rejected_commands": 0,
+    "guardrail_interventions": 0,
+    "startup_checks_ended_before_motion": 2
+  },
+  "provenance": {
+    "framework_git_commit": "bb6495fe24432485246a108be0858d2f46e3475e",
+    "framework_version": "0.58.1.dev2+gbb6495fe2",
+    "decision_maker": "当前 Codex 会话",
+    "registered_policy": "claude",
+    "policy_transport": "本地文件信箱",
+    "judgement": "Codex 检查双路图像，确认放置和撤离后的实际结果",
+    "scorer": "episode_length",
+    "eval_status": "success",
+    "original_eval_sha256": "fd96f9b67b40afc50ed95426450f991b0c50411a9031a6f3881e223e4e82c8e1",
+    "runtime_source_sha256": "132003d164c53818ea190b253a1c39547d7c3221a45f4ac36cb70012227bd0c4",
+    "eval_worktree_git_commit": "be76ea532dcdcb2874588abdd71c888716ce844d-dirty"
+  }
+}
