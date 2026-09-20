@@ -1,0 +1,2505 @@
+{
+  "source_commit": "7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9",
+  "snippets": {
+    "src/inspect_robots/registry.py#136-141": {
+      "title": "把名字变成可用的组件",
+      "summary": "根据组件种类和注册名，找到工厂函数并创建对象。这里做的是组件装配。",
+      "inputs": "kind 是类别，name 是注册名，kwargs 是构造参数。",
+      "returns": "一个已经构造出的组件；名字不存在时抛出 KeyError。",
+      "example": "例如把 embodiment 类别下的 arx_r5 名字交给注册表，才能找到对应机器人适配器。",
+      "code_sha256": "c374dbe8a80ce0ea36999f0c0548ca93e3209241d926b268745ef73103e73fc2",
+      "blocks": [
+        {
+          "line": 136,
+          "anchor": "def resolve(kind: Kind, name: str, /, **kwargs: Any) -> Any:",
+          "text": "这是函数入口。/ 表示它前面的参数只能按位置传；**kwargs 收集余下的命名参数，原样转交给组件工厂。"
+        },
+        {
+          "line": 138,
+          "anchor": "factories = registered(kind)",
+          "text": "先取该类别的“名字 → 工厂函数”字典。检查名字是否存在，报错时顺便列出可选名字，便于修正配置。"
+        },
+        {
+          "line": 141,
+          "anchor": "return factories[name](**kwargs)",
+          "text": "括号真正调用了工厂。此时组件构造函数可能有副作用；这几行本身没有控制机械臂，但也不能推断所有第三方工厂都只读。"
+        }
+      ]
+    },
+    "src/inspect_robots/task.py#54-161": {
+      "title": "定义任务，以及它最多执行多久",
+      "summary": "Task 保存场景、评分方式和运行上限，并在构造时检查配置。",
+      "inputs": "任务名、Scene 列表、评分器、重复轮数，以及步数或秒数上限。",
+      "returns": "校验后的任务；resolve_envelope 将上限转换成控制步数。",
+      "example": "若配置 30 秒且机器人声明 20 Hz，这里会换算成 600 步；它不是一个独立的墙钟超时器。",
+      "code_sha256": "e59690bb91a1e09bacca0a56f9ecc80233215ee30eb34c11259e340eac9d34dc",
+      "blocks": [
+        {
+          "line": 54,
+          "anchor": "class Task:",
+          "text": "Task 是任务配置，不负责自己启动机器人。这里的“运行多少轮”与单次动作的“小步数”是不同层次。"
+        },
+        {
+          "line": 65,
+          "anchor": "name: str",
+          "text": "name 标识任务，scenes 列出要跑的场景，scorer 指定怎样评分，epochs 指定重复次数。metadata 留给额外说明。"
+        },
+        {
+          "line": 73,
+          "anchor": "def __post_init__(self) -> None:",
+          "text": "步数和秒数必须二选一；两个都填或都不填都会报错。后续还排除负数、布尔值和无穷大等无效上限。"
+        },
+        {
+          "line": 91,
+          "anchor": "seen: set[str] = set()",
+          "text": "每个场景 ID 必须唯一，否则保存画面和动作时可能覆盖另一场景的文件。随后检查重复轮数的设置。"
+        },
+        {
+          "line": 98,
+          "anchor": "@property",
+          "text": "scorers 属性把单个评分器、名字或评分器列表统一成对象列表。字符串也能逐字符遍历，所以要先把单个字符串包装成一个元素。"
+        },
+        {
+          "line": 117,
+          "anchor": "@property",
+          "text": "epoch_spec 将整数轮数包装成统一的 Epochs 配置。envelope 适用于已经给定步数的任务；按秒配置时还需要机器人频率。"
+        },
+        {
+          "line": 131,
+          "anchor": "def resolve_envelope(self, control_hz: float | None) -> TaskEnvelope:",
+          "text": "已有 max_steps 时直接返回；否则先检查 control_hz，再算 秒数 × 每秒步数，向上取整且至少执行一小步。实际耗时还会受推理、相机与设备等待影响。"
+        }
+      ]
+    },
+    "src/inspect_robots/scene.py#33-41": {
+      "title": "描述一个场景",
+      "summary": "Scene 保存一次尝试的初始条件与任务说明，本身不执行这些条件。",
+      "inputs": "场景 ID、自然语言指令，以及可选目标、随机种子和布置钩子。",
+      "returns": "一个供任务编排、机器人初始化和评分使用的场景对象。",
+      "example": "“把木块放进蓝色盘子”是 instruction；木块初始位置与用于评分的目标可放在其它字段中。",
+      "code_sha256": "e9bf7a3e0389035032436b1abd0a5a01e2a4e9d239b4a2247202dfa8bdb15aad",
+      "blocks": [
+        {
+          "line": 33,
+          "anchor": "class Scene:",
+          "text": "把它理解成一张实验条件卡，而不是控制程序。真正布置场景、执行动作由其它组件完成。"
+        },
+        {
+          "line": 36,
+          "anchor": "id: str",
+          "text": "id 用于区分日志；instruction 是策略接到的任务。target 是给评分使用的结构化目标，具体类型由场景定义。"
+        },
+        {
+          "line": 39,
+          "anchor": "init_seed: int | None = None",
+          "text": "init_seed 用于可复现的初始化；setup 只是已注册布置函数的名字；metadata 可保存任务标准等附加信息。"
+        }
+      ]
+    },
+    "src/inspect_robots/eval.py#245-364": {
+      "title": "启动评测，并管理自己创建的资源",
+      "summary": "公开 eval 入口把任务、策略和机器人组合起来，再交给内部运行器。",
+      "inputs": "三类组件或注册名；可选控制器、审批器、日志和评分配置。",
+      "returns": "EvalLog 列表。通过注册名创建的机器人会在 finally 中关闭。",
+      "example": "R5 案例传入已构造的机器人对象，因此由自己的安全入口负责最后退出，不由 eval 自动接管关闭。",
+      "code_sha256": "a5cb01fe88f77e7c23a59e8164f24a325dea25e7e62fd193dc60e3a91b599492",
+      "blocks": [
+        {
+          "line": 245,
+          "anchor": "def eval(",
+          "text": "这些参数决定“跑什么、谁决定、谁执行、如何记录”。store_frames 控制是否保存相机帧，store_actions 控制动作旁路日志。"
+        },
+        {
+          "line": 263,
+          "anchor": "\"\"\"Run ``task`` with ``policy`` on ``embodiment``; return ``[EvalLog]``.",
+          "text": "这段长文档说明异常和资源契约。部分中断发生在清理阶段时，仍可能影响日志写出；不能把“尽量保留日志”理解成任何故障都绝不丢失。"
+        },
+        {
+          "line": 276,
+          "anchor": "``fail_on_error`` follows Inspect semantics for ``PolicyError`` (``True`` =",
+          "text": "PolicyError 是否继续由 fail_on_error 决定；硬件故障 EmbodimentFault 与安全中止 SafetyAbort 会终止评测，不受这个宽容选项影响。"
+        },
+        {
+          "line": 305,
+          "anchor": "Before a grader runs, an embodiment's optional duck-typed",
+          "text": "评分前可以调用机器人提供的 observe_parked 来得到无遮挡画面；是否停车、怎么停车，是具体实现的责任。"
+        },
+        {
+          "line": 332,
+          "anchor": "from inspect_robots.registry import resolve",
+          "text": "先统一评分入口，再把字符串名字解析成真实对象。owns_embodiment 专门记录这次是否由框架创建机器人。"
+        },
+        {
+          "line": 343,
+          "anchor": "try:",
+          "text": "真正的场景循环在 _run_eval。直接调用 Python eval 时应显式传入审批器；CLI 的默认安全链不是这个函数自动补齐的。R5 入口显式传入了 ChainApprover。"
+        },
+        {
+          "line": 360,
+          "anchor": "finally:",
+          "text": "finally 保证执行清理分支。只有“框架自己通过名字创建”的机器人在这里 close；调用者传入的对象必须由调用者释放。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#755-774": {
+      "title": "让通用 agent 适应当前机器人",
+      "summary": "bind 读取机器人的声明，建立本轮可用工具和状态标签。",
+      "inputs": "EmbodimentInfo：动作、观测、控制频率和操作说明。",
+      "returns": "保存在策略中的工具集、状态标签与 PolicyInfo。",
+      "example": "换成单臂 R5 后，工具里的维度应对应六关节和一个夹爪。这是通用 API agent 的实现；本次案例使用信箱策略中的对应绑定。",
+      "code_sha256": "77b3fdf27a8a5ea754e48137b88ad411ffe3c2a4e384e051da6b22d6f67e0e4e",
+      "blocks": [
+        {
+          "line": 755,
+          "anchor": "def bind(self, embodiment_info: EmbodimentInfo) -> None:",
+          "text": "bind 在运行前做接口适配，不是一次模型推理，也不发送运动指令。"
+        },
+        {
+          "line": 757,
+          "anchor": "toolset = build_toolset(",
+          "text": "把动作范围、观测字段、频率、速度选项以及可选预检查交给 build_toolset，生成可用工具。"
+        },
+        {
+          "line": 765,
+          "anchor": "self._toolset = toolset",
+          "text": "记下状态变量名字、机器人名字和操作说明。getattr 的第三个参数表示没有 docs 时使用 None。"
+        },
+        {
+          "line": 769,
+          "anchor": "self.info = PolicyInfo(",
+          "text": "策略对外声明自己已经采用这个机器人的动作和观测空间，供后面的兼容性检查使用。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#540-709": {
+      "title": "生成工具，并计算每步能走多远",
+      "summary": "build_toolset 根据动作语义决定如何接收模型目标，同时检查配置并推导插值步长。",
+      "inputs": "动作空间、观测声明、控制频率、速度比例，以及图像与预检查选项。",
+      "returns": "供模型使用的 Toolset；本页显示到函数中部，完整返回构造还在后文。",
+      "example": "绝对关节目标需要知道“现在在哪里”；相对位移已经是每一步要移动的量，不能套用同一套处理。",
+      "code_sha256": "67aa0ff107cae0b232b506e508752f8ef9e65158a78453b8971d9fa513143050",
+      "blocks": [
+        {
+          "line": 540,
+          "anchor": "def build_toolset(",
+          "text": "入口收集机器人声明。接下来的大量 if 是在正式运行前拒绝有歧义或不能安全解释的配置。"
+        },
+        {
+          "line": 553,
+          "anchor": "if images == \"on_demand\" and not observation_space.cameras:",
+          "text": "按需拍照却没声明相机，要报错；动作空间没说明语义，也不能猜测向量到底表示绝对位置还是相对移动。"
+        },
+        {
+          "line": 564,
+          "anchor": "mode = semantics.control_mode",
+          "text": "确认控制模式与旋转表示受支持。四元数不能简单地把每一维独立当角度插值；位移模式也不能交给把输入当配置姿态的 pre_check。"
+        },
+        {
+          "line": 578,
+          "anchor": "if control_hz is not None and (not np.isfinite(control_hz) or control_hz <= 0):",
+          "text": "控制频率和速度比例必须有效。没有声明频率时使用回退值估算步数，这不代表硬件真的按这个频率运行。"
+        },
+        {
+          "line": 595,
+          "anchor": "absolute = mode in ABSOLUTE_CONTROL_MODES",
+          "text": "绝对目标模式需要找到与动作同维的实测状态字段。若候选多个，优先找与 joint 或 eef 模式对应的字段，最后仍必须唯一。"
+        },
+        {
+          "line": 625,
+          "anchor": "low, high = action_space.low, action_space.high",
+          "text": "要求有限的上下界，并检查量程计算有没有溢出。位移范围还必须包含 0，才允许“不移动”。"
+        },
+        {
+          "line": 646,
+          "anchor": "native_backstop = np.asarray(_BACKSTOP_STEP_FRAC * (high - low), dtype=np.float64)",
+          "text": "准备每维安全预算：优先读取机器人声明的 max_step，没有声明的维度才使用量程比例默认值。"
+        },
+        {
+          "line": 662,
+          "anchor": "spacing = np.spacing(np.maximum(np.abs(low64), np.abs(high64)))",
+          "text": "浮点数也有分辨率：当数值太大、最小可表示间距已超过步长预算时，拒绝生成看似平滑、实际无法细分的轨迹。"
+        },
+        {
+          "line": 669,
+          "anchor": "resolved = control_hz if control_hz is not None else _FALLBACK_HZ",
+          "text": "将每秒速度比例换算成每步插值间距；对机器人明确声明的步长再按速度选项缩放。这里生成小步，后续审批器仍会逐步检查。"
+        },
+        {
+          "line": 683,
+          "anchor": "authored_labels = semantics.dim_labels",
+          "text": "最后为每个维度绑定名字，方便模型写 left_j0 这样的目标，也方便观测文字与动作逐项对应。"
+        }
+      ]
+    },
+    "src/inspect_robots/embodiment.py#44-65": {
+      "title": "机器人的声明卡",
+      "summary": "EmbodimentInfo 说明机器人接受什么、能观察什么，以及有哪些能力。",
+      "inputs": "插件作者填入的名称、空间、频率、能力与操作说明。",
+      "returns": "供策略绑定、兼容性检查和日志展示使用的描述对象。",
+      "example": "R5 的声明是 joint_pos 动作、7 维状态以及 fixed/wrist 两路相机。",
+      "code_sha256": "309e45af6da935f8c7ca969156901dff3997e59113dfb558c78795a433a097ea",
+      "blocks": [
+        {
+          "line": 44,
+          "anchor": "class EmbodimentInfo:",
+          "text": "这里定义的是描述信息，不是连接硬件的实现。docs 中的自由文本可能进入模型提示，应该写清坐标、关节方向和夹爪含义。"
+        },
+        {
+          "line": 55,
+          "anchor": "name: str",
+          "text": "action_space 定义可以发什么动作；observation_space 定义会收到哪些状态和图像；control_hz 是声明的节拍。"
+        },
+        {
+          "line": 59,
+          "anchor": "is_simulated: bool = False",
+          "text": "is_simulated 区分仿真与真机；capabilities 声明能力。supported_setups 和 supported_target_kinds 用于检查场景是否可实现。"
+        },
+        {
+          "line": 65,
+          "anchor": "docs: str | None = None",
+          "text": "操作说明可选。它帮助模型理解机器人，但不能代替下发前的程序安全检查。"
+        }
+      ]
+    },
+    "src/inspect_robots/spaces.py#48-83": {
+      "title": "说明动作数字的含义",
+      "summary": "ActionSemantics 为动作向量补上语义，防止同样的数字被两边解释成不同动作。",
+      "inputs": "控制模式、旋转表示、夹爪类型、坐标系、维度名和可选步长限制。",
+      "returns": "动作空间中的语义声明；无效 max_step 会在构造时被拒绝。",
+      "example": "0.1 可以是“关节目标 0.1 rad”，也可以是“这一小步再转 0.1 rad”。必须先知道 control_mode。",
+      "code_sha256": "aceb4987d593a70f4c06464918a20a2a26221af0b071daf0005da69bf97edbdb",
+      "blocks": [
+        {
+          "line": 48,
+          "anchor": "class ActionSemantics:",
+          "text": "数组的形状只告诉我们“有几个数”；这个类才说明“每个数代表什么”。"
+        },
+        {
+          "line": 64,
+          "anchor": "control_mode: ControlMode",
+          "text": "control_mode 区分关节绝对位置、相对位移等；rotation_repr 说明姿态编码；frame 说明使用哪个参考系。"
+        },
+        {
+          "line": 68,
+          "anchor": "dim_labels: tuple[str, ...] | None = None",
+          "text": "dim_labels 为各维起名。max_step 使用动作的原生单位，关节通常是弧度，夹爪可能是归一化开度。"
+        },
+        {
+          "line": 71,
+          "anchor": "def __post_init__(self) -> None:",
+          "text": "有声明步长时，每个具体值都必须有限且大于 0。相对位移等模式本身已经通过动作边界表达单步范围，因此这里拒绝再声明绝对目标式的 max_step。"
+        }
+      ]
+    },
+    "src/inspect_robots/compat.py#139-178": {
+      "title": "在运行前核对接口",
+      "summary": "收集策略、机器人和任务之间的不匹配，形成结构化报告。",
+      "inputs": "策略与机器人声明，可选任务，以及相机/状态名称映射 remap。",
+      "returns": "CompatibilityReport；这个函数收集问题，本身不抛兼容性异常。",
+      "example": "如果策略需要 wrist 相机，而机器人只声明 front，就需要映射或修正配置。",
+      "code_sha256": "50f1c246380d00ca4d5108683428f081912de88f04f3eedf6b56fe1f800bd08f",
+      "blocks": [
+        {
+          "line": 139,
+          "anchor": "def check_compatibility(",
+          "text": "这里采用“先收集所有问题”的方式。真正因报告失败而中断的入口在 assert_compatible 等调用方。"
+        },
+        {
+          "line": 147,
+          "anchor": "remap = dict(remap or {})",
+          "text": "复制 remap，建立报告。issues 是待累积的问题列表。"
+        },
+        {
+          "line": 151,
+          "anchor": "_check_action_spaces(policy.info.action_space, embodiment.info.action_space, issues)",
+          "text": "先检查动作空间，再解析两边相机和状态字段的名字，避免策略读取不存在的输入。"
+        },
+        {
+          "line": 158,
+          "anchor": "# Control-rate reconciliation (R1): only warn — the rollout enforces no",
+          "text": "声明频率不一致这里只给 warning：rollout 不负责墙钟节拍，真正节奏由策略或机器人侧协调。"
+        },
+        {
+          "line": 174,
+          "anchor": "if task is not None:",
+          "text": "提供了任务时，还要检查时间上限能否换成步数、场景的布置和目标类型是否受支持。最后把所有问题一起返回。"
+        }
+      ]
+    },
+    "src/inspect_robots/approver.py#74-106": {
+      "title": "把越界的目标裁回范围",
+      "summary": "ClampApprover 对每一维应用上下界，并留下是否改写过动作的标记。",
+      "inputs": "Action.data 与动作空间的 low/high。",
+      "returns": "不变时返回原对象；改写时返回带 clamped 标记的新 Action；NaN 会中止。",
+      "example": "允许范围是 −1 到 1，目标是 1.4，裁剪后的目标会是 1；它仍不是碰撞检查。",
+      "code_sha256": "f1cae34c619160bc177ff7fc57588636930fb5ac1f89dbe640aacd33d400ea89",
+      "blocks": [
+        {
+          "line": 74,
+          "anchor": "class ClampApprover:",
+          "text": "这是边界裁剪器。它只知道每个数字的上下限，不知道桌子、其它机械臂或障碍物在哪里。"
+        },
+        {
+          "line": 92,
+          "anchor": "def __init__(self, action_space: Box):",
+          "text": "构造时保存动作空间；review 在每个控制小步下发前调用。"
+        },
+        {
+          "line": 97,
+          "anchor": "data = np.asarray(action.data, dtype=np.float64)",
+          "text": "统一成浮点数组并拒绝 NaN。rollout 还会检查非有限值；不要依赖直接调用裁剪器来处理整个安全链。"
+        },
+        {
+          "line": 100,
+          "anchor": "low, high = self._space.low, self._space.high",
+          "text": "没有任何边界就原样通过；否则 np.clip 对各维执行低于下界取下界、高于上界取上界。"
+        },
+        {
+          "line": 104,
+          "anchor": "if np.array_equal(clamped, data):",
+          "text": "数值没有变化时保留对象身份。若改了，复制出新 Action 并保留原 metadata，再加 clamped=True，方便日志识别这次干预。"
+        }
+      ]
+    },
+    "src/inspect_robots/approver.py#141-276": {
+      "title": "限制相邻获准目标的跳变量",
+      "summary": "DeltaLimitApprover 避免绝对目标一步跳太远，并对位移模式使用相应的幅度边界。",
+      "inputs": "当前动作、动作语义、可选 max_delta，以及本轮共享的 store。",
+      "returns": "获准的小步动作；改写时带 delta_clamped 标记。",
+      "example": "上一条获准关节目标是 0.40，单步允许 0.05，新目标 0.60 会被限为 0.45。这里的参考不是实时测量值。",
+      "code_sha256": "571d3e5f33cd918892cb3df05072500e5ccc54de4efc5c110c6a516e7d8d3744",
+      "blocks": [
+        {
+          "line": 141,
+          "anchor": "class DeltaLimitApprover:",
+          "text": "关键区别：绝对位置要和上一条获准目标比较；相对位移本身就是步长。首条绝对动作尚无参考，不受 delta 限制，仍需边界与机器人侧检查。"
+        },
+        {
+          "line": 170,
+          "anchor": "def __init__(self, action_space: Box, max_delta: float | Any | None = None):",
+          "text": "先检查动作语义和旋转表示。不能安全地逐维裁剪的姿态编码会被拒绝。"
+        },
+        {
+          "line": 193,
+          "anchor": "self._absolute = sem.control_mode in ABSOLUTE_CONTROL_MODES",
+          "text": "决定是绝对模式还是位移模式。若调用者提供 max_delta，就先验证它能对应动作形状且数值有效。"
+        },
+        {
+          "line": 202,
+          "anchor": "if self._absolute:",
+          "text": "绝对模式优先使用显式 max_delta；否则逐维读取机器人 max_step，未声明的维度按量程的 5% 推导。"
+        },
+        {
+          "line": 215,
+          "anchor": "self._delta = np.empty(dim, dtype=np.float64)",
+          "text": "只为缺省维度计算默认量程预算，再补入明确声明值。reshape 保持预算和动作数组形状相同。"
+        },
+        {
+          "line": 238,
+          "anchor": "else:",
+          "text": "位移模式将动作边界与 ±max_delta 求交集；没有显式限制时，动作空间本身的边界就是约束。"
+        },
+        {
+          "line": 247,
+          "anchor": "@staticmethod",
+          "text": "若后面的审批器又把动作替换为保持姿态，应调用 rewind_reference，把“上一条获准目标”同步成实际执行的目标，避免后续限幅基准漂移。"
+        },
+        {
+          "line": 259,
+          "anchor": "def review(self, action: Action, store: dict[str, Any]) -> Action:",
+          "text": "执行时先拒绝 NaN，再从 store 取参考。np.clip 将新目标限制在参考 ± 允许变化量的范围内，并更新参考。"
+        },
+        {
+          "line": 272,
+          "anchor": "else:",
+          "text": "位移模式直接裁单步幅度。数值没变就返回同一对象；改动则添加 delta_clamped 标记供日志使用。"
+        }
+      ]
+    },
+    "src/inspect_robots/approver.py#307-323": {
+      "title": "把多个审批器串起来",
+      "summary": "ChainApprover 按固定顺序依次检查动作，后一关接到的是前一关的结果。",
+      "inputs": "一个或多个具有 review 方法的审批器。",
+      "returns": "整条链最终获准的动作；任一关抛出安全中止就不会继续下发。",
+      "example": "先裁关节上下界，再限相邻目标变化，最后还能追加具体机器人的检查。",
+      "code_sha256": "4d7d467a7192dac3cf65403f1b3893e59df3e64012bdb5fc4a25d379b0e8d069",
+      "blocks": [
+        {
+          "line": 307,
+          "anchor": "class ChainApprover:",
+          "text": "这是组合器，不增加新的安全规则。规则来自传入的各个审批器。"
+        },
+        {
+          "line": 316,
+          "anchor": "def __init__(self, *approvers: Approver):",
+          "text": "*approvers 接收任意数量的审批器，按给定次序保存。"
+        },
+        {
+          "line": 319,
+          "anchor": "def review(self, action: Action, store: dict[str, Any]) -> Action:",
+          "text": "每过一关就用返回值更新 action。若前一关改写了目标，后一关检查的是改写后的值；最后返回整条链的结果。"
+        }
+      ]
+    },
+    "src/inspect_robots/approver.py#37-63": {
+      "title": "让机器人贡献额外检查",
+      "summary": "GuardrailContribution 是机器人插件向 CLI 提供审批器与警告的结构。",
+      "inputs": "带显示名称的审批器列表，以及说明缺失或降级能力的 warnings。",
+      "returns": "一个可供 CLI 追加到默认安全链的贡献对象。",
+      "example": "例如某机器人提供碰撞检查；若没有碰撞模型，也应通过 warnings 明示，而不是假装已经检查。",
+      "code_sha256": "171e3e404500a93f995d3c45375c5bd67f9d6fb14c7e9ad0795d1b12101d3e22",
+      "blocks": [
+        {
+          "line": 37,
+          "anchor": "class GuardrailContribution:",
+          "text": "这是插件和 CLI 之间的约定。额外检查允许拒绝动作；如果替换目标，还必须同步 delta 限幅器的参考。"
+        },
+        {
+          "line": 55,
+          "anchor": "approvers: tuple[tuple[str, Approver], ...] = ()",
+          "text": "approvers 中每项是“显示名字、审批器对象”；warnings 是要向操作员显示的说明，可以和有效审批器同时存在。"
+        },
+        {
+          "line": 58,
+          "anchor": "def __post_init__(self) -> None:",
+          "text": "显示名称不能为空或含换行，审批器还必须确实有可调用的 review。这里只检查接口形状，不证明算法本身正确。"
+        }
+      ]
+    },
+    "src/inspect_robots/cli.py#763-827": {
+      "title": "组装 CLI 默认安全链",
+      "summary": "根据动作空间安装可用的基础检查，再追加机器人提供的检查，并返回诊断信息。",
+      "inputs": "动作空间、可选最大动作变化量、机器人对象。",
+      "returns": "审批器、启用项名称列表、警告列表。",
+      "example": "缺少必要声明时某个检查会被跳过并告警；不能把“程序启动了”当成所有保护都已启用。",
+      "code_sha256": "39e97acdb6ff11b96e8e21de658c40503ff5b25050079e4c9e9cd6f833a95a94",
+      "blocks": [
+        {
+          "line": 763,
+          "anchor": "def _build_guardrails(",
+          "text": "这是 CLI 路径中的组装函数。通过 Python 直接调用 eval 的程序应自己传入需要的审批器。"
+        },
+        {
+          "line": 784,
+          "anchor": "parts: list[Approver] = []",
+          "text": "分别收集真正安装的检查、展示名称和警告。没有上下界就无法安装边界裁剪。"
+        },
+        {
+          "line": 792,
+          "anchor": "try:",
+          "text": "尝试创建变化量限制器。若构造器因语义等原因拒绝，这里把原因保留为警告，而不是悄悄忽略。"
+        },
+        {
+          "line": 800,
+          "anchor": "missing = object()",
+          "text": "如果机器人提供 contribute_guardrails，就检查它确实可调用且返回规定的数据类型，错误的插件接口会直接退出。"
+        },
+        {
+          "line": 816,
+          "anchor": "for name, approver in contribution.approvers:",
+          "text": "额外审批器追加在默认检查之后，不能在这里顶替已有基础检查；插件警告也合并到输出。"
+        },
+        {
+          "line": 821,
+          "anchor": "if not parts:",
+          "text": "如果一项检查都没装成，返回不干预的 AutoApprover 并明确警告。否则返回按顺序执行的 ChainApprover。"
+        }
+      ]
+    },
+    "plans/0034-embodiment-contributed-guardrails.md#1-90": {
+      "title": "设计背景：机器人检查怎样接入默认链",
+      "summary": "这是设计文档，说明为什么通用边界和步长限制之外还需要机器人专属检查。",
+      "inputs": "已有的通用安全链，以及插件里尚未接入的碰撞检查。",
+      "returns": "提出可选贡献接口、追加顺序和改写目标时的参考同步约定。",
+      "example": "YAM 的碰撞模型是文档中的例子，不表示所有机器人（包括 R5）都自动具备同样的碰撞检查。",
+      "code_sha256": "bb02b9d6cf1ca2a95b165ba23140362192bf7e18d7975d8022f407779d4aa508",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "# 0034 — Embodiment-contributed guardrails",
+          "text": "这是方案说明，不是执行代码。它帮助理解后面 GuardrailContribution 接口为什么存在。"
+        },
+        {
+          "line": 5,
+          "anchor": "## Problem",
+          "text": "问题：通用检查知道数字范围，但不认识具体机械臂的几何。插件即使已经实现碰撞检查，也需要框架提供接入点才能实际生效。"
+        },
+        {
+          "line": 26,
+          "anchor": "## Design",
+          "text": "方案要求专属检查只追加到默认检查后面，保留前面的边界裁剪与变化量限制。显式关闭整条安全链时，附加检查也会被关闭。"
+        },
+        {
+          "line": 35,
+          "anchor": "### 1. `GuardrailContribution` (approver.py)",
+          "text": "这个数据类同时携带检查对象和可读警告，避免“没能装上某个检查”变成不可见的状态。"
+        },
+        {
+          "line": 60,
+          "anchor": "The docstring also states the **behavioral contract** a contributed approver",
+          "text": "链式检查还约定：原样放行时保留对象身份；替换目标时同步限幅参考；明确否决时抛出 SafetyAbort。"
+        },
+        {
+          "line": 74,
+          "anchor": "- *Validate your own input*: a contribution must reject non-finite values",
+          "text": "这是设计稿的责任说明；阅读实际行为还要对照当前 rollout.py，它会在审批前后检查有限值。不要只凭设计稿推断当前代码的检查位置。"
+        },
+        {
+          "line": 80,
+          "anchor": "### 1b. Public store seam: `DeltaLimitApprover.rewind_reference`",
+          "text": "把 rewind_reference 公开，是为了让插件无需复制框架内部 store 键名，避免以后重命名造成静默失效。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#115-130": {
+      "title": "翻译给模型的默认开场规则",
+      "summary": "这段字符串会成为通用 API agent 的 system 提示，约束它如何看图、移动和结束。",
+      "inputs": "模板中的机器人名称 name，以及模型调用预算 budget。",
+      "returns": "填好占位符的提示文本；字符串本身不执行动作。",
+      "example": "note 应写成“木块还在两指之间，先抬高一点验证”，让操作者能读懂动作意图。",
+      "code_sha256": "a778f4c368c811e140cd8ab612f45e3f6423dcf6ac48a5339f6ec229d0620559",
+      "blocks": [
+        {
+          "line": 115,
+          "anchor": "_SYSTEM_TEMPLATE = \"\"\"You are controlling a real robot embodiment named {name!r} \\",
+          "text": "中文意译：你正在通过工具控制名为 name 的机器人；每条观测会提供自身状态与相机画面。"
+        },
+        {
+          "line": 118,
+          "anchor": "small, deliberate motions; re-check the observation after every motion. \\",
+          "text": "要求动作小而审慎，每次运动后重新观察。每个移动调用都要带 note，简短说明看到什么、为什么这样移动。"
+        },
+        {
+          "line": 123,
+          "anchor": "Safety approvers clamp out-of-bounds and too-fast actions below you. \\",
+          "text": "告诉模型下方有安全审批器，并让它接收现场操作者的反馈。这是行为提示，真正的限幅必须由程序实施。"
+        },
+        {
+          "line": 126,
+          "anchor": "Respond with exactly one tool call per turn. When the goal is achieved call \\",
+          "text": "每回合给一个工具调用。完成时调用 done，做不到时调用 give_up，并在结束时总结希望一开始就知道的经验。"
+        },
+        {
+          "line": 129,
+          "anchor": "known from the start. You have a budget of \\",
+          "text": "budget 是整个试次允许的模型调用次数。它与机器人控制小步、工具命令数不是同一个指标。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#132-152": {
+      "title": "翻译按需看图的开场规则",
+      "summary": "与默认提示相比，这个版本让模型主动请求图片，并解释“动作后拍照”的时序。",
+      "inputs": "机器人名称、调用预算和按需取图规则。",
+      "returns": "on_demand 模式使用的系统提示字符串。",
+      "example": "先调用 take_pic 看当前画面，再决定动作；或者先移动并排队取图，下一次观测才返回运动后的照片。",
+      "code_sha256": "052158324e38e03ca3bbe8866cb111448f82ecb08827a4a3411319d35b98d8c6",
+      "blocks": [
+        {
+          "line": 132,
+          "anchor": "_ON_DEMAND_SYSTEM_TEMPLATE = \"\"\"You are controlling a real robot embodiment named {name!r} \\",
+          "text": "中文意译：默认消息只带状态数值，不自动附图；需要画面时调用 take_pic。"
+        },
+        {
+          "line": 135,
+          "anchor": "`take_pic` to see them. A camera already shown for the current observation \\",
+          "text": "同一次观测里已经给过的相机画面不能反复索取。这里取的是这份观测的图，不会凭空得到机器人运动之后的新画面。"
+        },
+        {
+          "line": 138,
+          "anchor": "Every move tool call must include a `note`: in one or two sentences, say what \\",
+          "text": "移动仍必须带 note，说明当前判断依据与动作原因；操作者可以实时读这些说明。"
+        },
+        {
+          "line": 142,
+          "anchor": "Safety approvers clamp out-of-bounds and too-fast actions below you. \\",
+          "text": "程序安全检查继续在模型下面执行；操作员反馈作为现场指导进入下一次模型输入。"
+        },
+        {
+          "line": 145,
+          "anchor": "Respond with exactly one motion tool call per turn; `take_pic` may be chained \\",
+          "text": "每回合只能有一个运动调用，但可以跟一个 take_pic。排在动作后面的拍照必须等运动推进后才兑现，并说明到底执行了多少步。"
+        },
+        {
+          "line": 149,
+          "anchor": "to make. When the goal is achieved call done; if it cannot be achieved call \\",
+          "text": "done / give_up 结束试次并收集经验；budget 仍是模型调用预算，不是相机张数。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#776-805": {
+      "title": "每个试次重新建立 agent 对话",
+      "summary": "reset 选择提示模板、加入机器人说明和可选历史经验，并清空本试次计数。",
+      "inputs": "当前 Scene、此前 bind 得到的机器人信息和策略选项。",
+      "returns": "只含开场说明与当前任务目标的新消息列表，以及归零后的试次状态。",
+      "example": "相同初始提示可以用于多轮比较；若主动加入 prior_learnings，就应记录这是带历史经验的实验。",
+      "code_sha256": "4a7fe7b5271398d93d9b33d04915103bfb47b546d3c6a4c2782d75d974c37f20",
+      "blocks": [
+        {
+          "line": 776,
+          "anchor": "def reset(self, scene: Scene) -> None:",
+          "text": "先清掉上一轮的 hindsight，再按是否按需看图选择系统模板，填入机器人名与调用预算。"
+        },
+        {
+          "line": 781,
+          "anchor": "if self._pre_check is not None:",
+          "text": "有运动预检查时补充相应规则；机器人 docs 不为空时加入操作说明。"
+        },
+        {
+          "line": 786,
+          "anchor": "if self._prior_learnings_text is not None:",
+          "text": "历史经验会明确注明可能错误或过时，应以当前观测为准。它是可选输入，不是无条件相信的真值。"
+        },
+        {
+          "line": 793,
+          "anchor": "self._messages = [",
+          "text": "用新的 system 消息和 Goal 用户消息替换消息列表；不是继续往上一轮对话后面追加。"
+        },
+        {
+          "line": 800,
+          "anchor": "self._echo(f\"[agent] goal: {scene.instruction}\")",
+          "text": "清空调用量、token 汇总、待兑现拍照和已展示相机集合，避免上一轮统计与请求串入本轮。"
+        }
+      ]
+    },
+    "src/inspect_robots/embodiment.py#69-146": {
+      "title": "机器人实现必须提供哪些方法",
+      "summary": "Embodiment 是协议，定义 reset、step、close 的形状及可选扩展约定。",
+      "inputs": "具体插件需要满足的接口契约。",
+      "returns": "类型与行为约定；这里的方法体是省略号，不会实际复位或发 CAN 指令。",
+      "example": "R5 的真实行为应看 ArxR5Embodiment 及本机 ObservedStartArm。不能仅凭 reset 这个名字认定它一定运动。",
+      "code_sha256": "2654a5736625f1ad6e75f5f28eb63f20c0da5e0bb9e6aa23c58d9be653a1ca12",
+      "blocks": [
+        {
+          "line": 69,
+          "anchor": "class Embodiment(Protocol):",
+          "text": "Protocol 表示接口约定。这里写的是“应提供哪些方法”，不是某一台机器人的实现。"
+        },
+        {
+          "line": 72,
+          "anchor": "Embodiments may additionally define an **optional** ``bind_task(envelope)``",
+          "text": "可选 bind_task 告诉插件本次预算，便于显示进度等；不是所有调用路径都会触发，所以插件必须能在没有它时工作。"
+        },
+        {
+          "line": 85,
+          "anchor": "Embodiments may additionally offer an optional",
+          "text": "接入统一操作员会话后，插件不再自行抢读 stdin 或输出状态，避免多个组件争用终端。"
+        },
+        {
+          "line": 101,
+          "anchor": "Embodiments may additionally offer an optional ``observe_parked()`` hook:",
+          "text": "observe_parked 可为评分提供无遮挡画面；如果停车会改变待评分状态（例如手里还拿着物体），可以拒绝停车并返回 None。"
+        },
+        {
+          "line": 122,
+          "anchor": "Embodiments may also define an **optional**",
+          "text": "contribute_guardrails 是 CLI 的可选扩展。直接调用 eval / rollout 的程序要自行组装审批器。"
+        },
+        {
+          "line": 132,
+          "anchor": "info: EmbodimentInfo",
+          "text": "reset 接受场景并返回首次观测；step 执行一个动作并返回结果；close 释放资源。省略号是协议占位，实际运动与退出安全由实现负责。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1250-1271": {
+      "title": "把观测装成一条多模态消息",
+      "summary": "将状态、审批反馈、操作员信息和相机画面组合成模型输入。",
+      "inputs": "Observation、状态标签，以及可选相机选择、运动说明和深度信息。",
+      "returns": "一个由文本部分和图片部分组成的列表。",
+      "example": "模型读到的关节名称应与移动工具接受的名称一致，才能把“看到的状态”对应到“要发的目标”。",
+      "code_sha256": "9b9268119efb10c8950dc219bdaa6d3f0a47f365eace541db0e6748092e153f0",
+      "blocks": [
+        {
+          "line": 1250,
+          "anchor": "def _observation_content(",
+          "text": "输入不是一张图，而是一整份观测；reveal 指定本次展示哪些相机，narration 可补充上一段运动的执行说明。"
+        },
+        {
+          "line": 1259,
+          "anchor": "lines = [\"Current observation.\"]",
+          "text": "先写当前任务和状态数值，再加入动作被审批器改写的反馈。没有对应信息就不加空白提示。"
+        },
+        {
+          "line": 1266,
+          "anchor": "lines.extend(_operator_lines(observation))",
+          "text": "追加现场操作员的话与运动完成说明，使模型能据实际结果修正下一步。"
+        },
+        {
+          "line": 1269,
+          "anchor": "parts: list[dict[str, Any]] = [{\"type\": \"text\", \"text\": \"\\n\".join(lines)}]",
+          "text": "把文字合成一个 text 部分，再附加编码好的图片部分。返回的是消息内容，还没有调用模型 API。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1187-1205": {
+      "title": "给状态数组里的每个数加上名字",
+      "summary": "将观测里的状态值转成终端和模型提示都能使用的文字行。",
+      "inputs": "状态字典，以及可选的“状态字段名、维度名列表”。",
+      "returns": "若干字符串；数值用于显示时保留四位小数。",
+      "example": "[0.1, 0.2, …] 会尽可能显示为 left_j0=0.1 left_j1=0.2 …，减少维度对应歧义。",
+      "code_sha256": "498b2eb01345d58d1a70e776e80a8cc55954e2a48c6c5771c68116e1c80e628e",
+      "blocks": [
+        {
+          "line": 1187,
+          "anchor": "def _state_lines(",
+          "text": "同一个格式化函数供提示与日志展示使用，避免两处对状态的描述不一致。"
+        },
+        {
+          "line": 1192,
+          "anchor": "lines: list[str] = []",
+          "text": "逐个处理 state 字段，转成浮点数组，并生成用于文本显示的四位小数列表；没有修改原观测。"
+        },
+        {
+          "line": 1196,
+          "anchor": "if state_labels is not None and key == state_labels[0]:",
+          "text": "只有字段名和数组长度都能与标签匹配时，才逐个拼成 名字=数值。strict=True 防止名字和值长度不一致。"
+        },
+        {
+          "line": 1204,
+          "anchor": "lines.append(f\"state[{key}]: {rounded}\")",
+          "text": "无法可靠配标签时退回显示字段名和完整数值列表，不猜测每一维的含义。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1214-1230": {
+      "title": "告诉模型上一段动作被改过多少",
+      "summary": "把观测中的审批干预记录压缩成简洁反馈。",
+      "inputs": "observation.extra 内的 approvals 列表。",
+      "returns": "一条干预次数与原因汇总；没有记录时返回 None。",
+      "example": "如果多步都因为 delta_clamped 被改写，会合并成原因和次数，而不是重复几十行。",
+      "code_sha256": "81e17aae18747b20dec16064d0cab78e79bd5477dd27cc0d627de0a304b4d820",
+      "blocks": [
+        {
+          "line": 1214,
+          "anchor": "def _approvals_line(observation: Observation) -> str | None:",
+          "text": "先检查 approvals 是否是非空列表。缺失或为空意味着没有可报告的干预记录。"
+        },
+        {
+          "line": 1218,
+          "anchor": "total = len(approvals)",
+          "text": "统计记录数，并提取有效 detail。只有次数、没有具体原因时也能生成简短反馈。"
+        },
+        {
+          "line": 1222,
+          "anchor": "counts = Counter(details)",
+          "text": "Counter 合并相同原因，多次出现用乘号和次数表示。最后返回一行文本供模型下一次决定时参考。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1233-1247": {
+      "title": "把操作员反馈放进观测消息",
+      "summary": "只接受框架保留通道中结构正确的操作员留言，附上收到时的步号。",
+      "inputs": "extra.operator_messages 中的消息条目。",
+      "returns": "可加入模型输入的反馈文字列表。",
+      "example": "“第 41 步：夹爪再往左一点”会与下一次观测一起交给策略。",
+      "code_sha256": "e5e477a0ceda7eaa6fe6a42a9efceeb5602c9c741078ec3fb768c71918080d75",
+      "blocks": [
+        {
+          "line": 1233,
+          "anchor": "def _operator_lines(observation: Observation) -> list[str]:",
+          "text": "这段代码负责格式化已有反馈，不负责读取麦克风或键盘。"
+        },
+        {
+          "line": 1235,
+          "anchor": "messages = observation.extra.get(\"operator_messages\")",
+          "text": "不是列表就返回空列表；每个元素也必须是字典，坏条目会被跳过。"
+        },
+        {
+          "line": 1242,
+          "anchor": "step = message.get(\"t\")",
+          "text": "要求步号是整数、内容是字符串，再拼成带时间位置的 operator feedback 文本。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#865-1034": {
+      "title": "一次 act 里，可能会问模型不止一次",
+      "summary": "把新观测加入对话，调用模型并验证工具调用，直到拿到能执行的动作块。",
+      "inputs": "新 Observation、已经绑定的工具集、对话历史与调用预算。",
+      "returns": "一个 ActionChunk，或明确错误/放弃。本片段只显示函数前半段。",
+      "example": "模型先请求图片、或者第一次参数写错后修正，都可能使一次 act 包含多次 complete 调用。",
+      "code_sha256": "9c105b44b9d6a61bd62a8abefa6b82aa902883b511facf0334f36c583e531939",
+      "blocks": [
+        {
+          "line": 865,
+          "anchor": "def act(self, observation: Observation) -> ActionChunk:",
+          "text": "必须先 bind。否则还不知道动作和状态怎样解释，不能开始 act。"
+        },
+        {
+          "line": 873,
+          "anchor": "depth = resolve_depth(observation) if self._depth == \"render\" else {}",
+          "text": "准备深度显示和相机展示状态。按需模式下，上一轮排队的拍照在这份新观测上兑现。"
+        },
+        {
+          "line": 891,
+          "anchor": "observation_content = _observation_content(",
+          "text": "把状态、反馈和允许展示的图像拼入消息；按需模式还列出这次真正可用的相机，避免模型索取不存在的画面。"
+        },
+        {
+          "line": 906,
+          "anchor": "self._messages.append({\"role\": \"user\", \"content\": observation_content})",
+          "text": "把观测加入对话，并向终端打印相机数、状态与步号，供操作者跟踪。"
+        },
+        {
+          "line": 918,
+          "anchor": "failures = 0",
+          "text": "建立本次 act 的失败计数并进入循环。预算用完时生成放弃动作；配置 image_horizon 时，发送前移除较旧图片以控制上下文。"
+        },
+        {
+          "line": 930,
+          "anchor": "message = self._client.complete(",
+          "text": "这里才调用模型客户端。complete 返回后增加调用计数，并累加响应中可获得的 usage；底层网络重试不一定与这处计数一一对应。"
+        },
+        {
+          "line": 946,
+          "anchor": "raw_message = message.raw()",
+          "text": "保存原始模型回复，并展示文字与工具调用。记录动作说明与用量，便于事后审查。"
+        },
+        {
+          "line": 954,
+          "anchor": "if not message.tool_calls:",
+          "text": "只给文字、没有工具调用时，增加失败计数并提示模型改正；连续失败达到上限就报错。当前观测不变，因此没有因此多动一步机器人。"
+        },
+        {
+          "line": 978,
+          "anchor": "chunk: ActionChunk | None = None",
+          "text": "开始逐个解释本次返回的工具调用，维护“是否已有动作/失败”等状态，避免在一次决定里连续执行多个运动。"
+        },
+        {
+          "line": 988,
+          "anchor": "is_capture = self._images == \"on_demand\" and call.name == \"take_pic\"",
+          "text": "按需取图有单独分支。没有画面可供展示是世界状态问题，首次这样拒绝不会立刻按格式错误处罚。"
+        },
+        {
+          "line": 1006,
+          "anchor": "requested = (",
+          "text": "如果旧图片已被从上下文中移除，就重新核对模型实际上还看得到哪些相机。此处只是函数节选，后续动作与拍照结果处理在完整源码中。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#136-274": {
+      "title": "把可调用功能写成模型能读取的工具定义",
+      "summary": "schemas 生成移动、完成、放弃及可选取图工具的 JSON 描述。",
+      "inputs": "当前机器人动作模式、维度名、边界与图像模式。",
+      "returns": "工具 schema 列表；这些字典是说明书，不直接执行运动。",
+      "example": "移动工具要求 targets 或 deltas，再加 note；参数实际合法与否还要在 execute 路径里检查。",
+      "code_sha256": "f46b6f04cea014da41baf600188d7ada89aab5677a6d7114b086b7aa69339584",
+      "blocks": [
+        {
+          "line": 136,
+          "anchor": "def schemas(self) -> list[dict[str, Any]]:",
+          "text": "根据模式选择工具说明：末端绝对位姿、关节绝对目标、相对位移的单位和含义不同。"
+        },
+        {
+          "line": 154,
+          "anchor": "elif self._absolute:",
+          "text": "绝对关节模式使用 targets；没有点名的维度保持当前值。相对模式使用 deltas，没有点名的维度不移动。"
+        },
+        {
+          "line": 168,
+          "anchor": "move = {",
+          "text": "构造函数调用格式的 schema：工具名称、自然语言描述和参数对象。模型正是从这些说明里知道能调用什么。"
+        },
+        {
+          "line": 176,
+          "anchor": "values_key: {",
+          "text": "动作数值是“维度名字 → 数值”的映射；note 要描述当前观察和动作理由。required 表示这两个字段都必须提供。"
+        },
+        {
+          "line": 198,
+          "anchor": "done = {",
+          "text": "done 表示策略宣布结束，仍需评分或证据核验成功；summary 与 hindsight 分别记录总结和经验。"
+        },
+        {
+          "line": 218,
+          "anchor": "give_up = {",
+          "text": "give_up 表示无法继续完成，同样要求原因与经验，保留失败过程中的可用信息。"
+        },
+        {
+          "line": 236,
+          "anchor": "schemas = [move, done, give_up]",
+          "text": "仅在 on_demand 模式增加 take_pic。可选 cameras 指定相机，省略表示所有可用相机；拍照也要说明为什么需要看。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1108-1133": {
+      "title": "回复工具结果，并决定是否把动作交出去",
+      "summary": "这是 act 函数末尾：把每个调用的结果写回对话，必要时附图，最终返回动作块。",
+      "inputs": "前面解释工具调用得到的结果文字、动作块、图片请求和失败计数。",
+      "returns": "动作块返回控制器，或继续询问模型；连续错误过多则终止。",
+      "example": "额外运动调用会收到 ignored；收到一张当前图片后，模型还可以继续决定下一步动作。",
+      "code_sha256": "25ed1519a266788e272f752d98ed80924e2b61603e7f6a482a8c5b30a8b45fb3",
+      "blocks": [
+        {
+          "line": 1108,
+          "anchor": "result_text = \"ignored: one tool call per turn\"",
+          "text": "这里是前面分支的尾部，不是一个独立函数。多余的调用会收到“每回合只接受一个”的结果文本，不会因此再执行一段运动。"
+        },
+        {
+          "line": 1110,
+          "anchor": "self._messages.append(",
+          "text": "用 tool_call_id 把回复与原调用对应起来，写入对话并显示给操作者。"
+        },
+        {
+          "line": 1115,
+          "anchor": "if immediate_frames:",
+          "text": "单独的取图请求可以立即把当前观测里的图附回消息，让模型先看图再决定。"
+        },
+        {
+          "line": 1126,
+          "anchor": "if chunk is not None:",
+          "text": "已经获得动作块就返回，让控制器推进机器人；还没获得且连续失败超限就报错。最后一行已进入下一个函数声明。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#375-420": {
+      "title": "先检查模型给出的移动参数",
+      "summary": "把工具参数变成数值向量，并区分可纠正的模型参数错误和不能继续的传感器错误。",
+      "inputs": "移动调用的 arguments 与当前观测。",
+      "returns": "合法时进入绝对目标或位移处理；参数错时返回错误文字。",
+      "example": "写错关节名可以让模型改；实测状态出现 NaN 则不能继续拿它规划运动。",
+      "code_sha256": "2e8466e45de879d6fe07ef52392e211dc1addc5fa5b79054e1fc80bb588f7fad",
+      "blocks": [
+        {
+          "line": 375,
+          "anchor": "def _move(self, arguments: dict[str, Any], observation: Observation) -> ToolResult:",
+          "text": "绝对模式先读取当前状态。坏传感器数据直接抛出异常，不能被“参数格式错误”掩盖成一次可以继续重试的小问题。"
+        },
+        {
+          "line": 385,
+          "anchor": "call_note = arguments.get(\"note\")",
+          "text": "每次移动必须有非空 note，说明观察与理由；缺失时只返回错误，不生成动作块。"
+        },
+        {
+          "line": 391,
+          "anchor": "values_key = \"targets\" if self._absolute else \"deltas\"",
+          "text": "根据模式读取 targets 或 deltas，并要求它是非空字典。"
+        },
+        {
+          "line": 396,
+          "anchor": "vector = np.zeros(len(self._labels))",
+          "text": "逐个把维度名字映射为数组下标，拒绝未知名字、布尔值或非数值参数。"
+        },
+        {
+          "line": 406,
+          "anchor": "try:",
+          "text": "把 JSON 数值转换为浮点，显式处理极大整数溢出，再排除无穷大与 NaN。合法值和它对应的维度索引一起保存。"
+        },
+        {
+          "line": 417,
+          "anchor": "if self._absolute:",
+          "text": "两种模式分开处理：绝对目标需要当前状态作起点，位移模式直接拆分总位移。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#422-474": {
+      "title": "把一个绝对目标分成平滑的小步",
+      "summary": "从当前状态出发补齐未指定的维度，验证目标，再根据每维步长生成插值序列。",
+      "inputs": "目标字典、数值向量、点名的维度下标与当前状态。",
+      "returns": "通过可选预检查的动作序列及步数，或具体的拒绝原因。",
+      "example": "这是通用 API agent 的插值：起点是观测值。本次 R5 信箱策略为处理静差，采用上一条下发目标作插值基准，不能把两者混为一谈。",
+      "code_sha256": "457fdfbff8247f21c76c69c6f9661d53b901220ad49c8930f634f974e82bcb41",
+      "blocks": [
+        {
+          "line": 422,
+          "anchor": "def _move_absolute(",
+          "text": "先复制当前状态作为完整目标，所以模型没有点名的维度维持原值。"
+        },
+        {
+          "line": 430,
+          "anchor": "for label, index in zip(values, named_indices, strict=True):",
+          "text": "固定不动的维度只能接受固定值；其它目标必须处于边界内。这里会拒绝越界请求，让模型改正。"
+        },
+        {
+          "line": 446,
+          "anchor": "ratios: list[np.float64] = []",
+          "text": "逐维计算“距离 ÷ 单步允许变化”，取最大的比例作为整段所需步数，保证所有关节都能按同一组时间点到达。"
+        },
+        {
+          "line": 454,
+          "anchor": "headed_ratio = np.divide(ratio, 1.0 - _RELATIVE_HEADROOM)",
+          "text": "加入很小的数值余量，向上取整；超过单次播放上限就拒绝，要求拆成多次决定。"
+        },
+        {
+          "line": 459,
+          "anchor": "fractions = np.linspace(1.0 / steps, 1.0, steps)",
+          "text": "np.linspace 生成从第一小步到终点的比例，按 当前值 + 路程 × 比例 插值，末步显式设为目标以消除累计浮点误差。"
+        },
+        {
+          "line": 466,
+          "anchor": "if self._pre_check is not None:",
+          "text": "可选 pre_check 接收整条只读路点数组。返回拒绝理由就不生成可执行结果；通过后也仍需经过框架逐步审批。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#476-510": {
+      "title": "把总位移分成合规的小位移",
+      "summary": "相对动作需要拆的是“总共移动多少”，不是从当前位置插值到一个绝对坐标。",
+      "inputs": "总位移向量和模型点名的维度。",
+      "returns": "若干相同的单步位移，加起来等于请求的总位移（数值精度范围内）。",
+      "example": "请求移动 3 cm、每步最多 1 cm，至少要拆成三步；数值余量可能使实际步数稍多。",
+      "code_sha256": "baec70532b69aee039b8b436ecfb92e1ae27c57e8007aa2ad3bba5c235f4a6d4",
+      "blocks": [
+        {
+          "line": 476,
+          "anchor": "def _move_displacement(",
+          "text": "不需要当前位置来计算绝对终点；这里按方向与动作边界推导每维需要多少小步。"
+        },
+        {
+          "line": 483,
+          "anchor": "for index in named_indices:",
+          "text": "正方向和负方向的限值可能不同。某方向允许值是 0 时，明确拒绝朝该方向移动。"
+        },
+        {
+          "line": 492,
+          "anchor": "ratios.append(np.divide(np.abs(value), limit))",
+          "text": "取所有维度所需步数的最大值，加数值余量并向上取整；超过播放上限则要求拆分请求。"
+        },
+        {
+          "line": 498,
+          "anchor": "per_step = vector / steps",
+          "text": "每步位移 = 总位移 ÷ 步数。还要防止极小数被除成精确的 0，否则会出现“报告执行了、实际没动”的情况。"
+        },
+        {
+          "line": 509,
+          "anchor": "actions = [Action(data=per_step.copy()) for _ in range(steps)]",
+          "text": "复制出每一步的位移 Action，并交回成功结果。后续控制器和审批器仍要逐步处理。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#37-41": {
+      "title": "插值使用的几个常量",
+      "summary": "这些常量决定缺省步数估计、一次动作的长度上限，以及数值计算余量。",
+      "inputs": "插件内固定值；部分计算还会被机器人声明或运行参数影响。",
+      "returns": "没有直接输出，只在生成工具和拆分动作时被引用。",
+      "example": "声明了机器人自身 max_step 时，要看 build_toolset 的分支，不能只拿 5% 当作所有维度的最终限制。",
+      "code_sha256": "a087feb14e30a64af090f7a7c2e572a750811ba5f8a3a84a1cb84eaf666f868d",
+      "blocks": [
+        {
+          "line": 37,
+          "anchor": "_FALLBACK_HZ = 10.0",
+          "text": "未声明频率时按 10 Hz 推导步数。单次播放预算默认 10 秒；未声明真实频率时这只是步数估计，不是实际墙钟保证。"
+        },
+        {
+          "line": 39,
+          "anchor": "_BACKSTOP_STEP_FRAC = 0.05",
+          "text": "默认单步后备比例是量程的 5%；默认每秒速度比例为 10%。它们用于推导动作间距，不是机械臂各关节的统一物理速度。"
+        },
+        {
+          "line": 41,
+          "anchor": "_RELATIVE_HEADROOM = 1e-6",
+          "text": "1e-6 是很小的相对余量，用来避免浮点取整让某一步刚好超出预算。"
+        }
+      ]
+    },
+    "plans/0014-agent-speed-limited-playout.md#1-90": {
+      "title": "为什么不再让模型填写运动秒数",
+      "summary": "设计文档说明，插值应由确定性的速度预算生成，避免模型给太短时间造成走不到目标。",
+      "inputs": "旧工具要求模型选择 duration_s，后续限幅却可能把动作截短。",
+      "returns": "移除 duration_s，由目标距离与步长预算决定动作块长度。",
+      "example": "R5 案例采用低速插值和实测核验；即便插值步数合理，静差仍可能使末端没有到达请求位置。",
+      "code_sha256": "5c495f6d3df2f8de20efa37f12d10af3d916a71a7b163c2f76b791d68c6c1662",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "# 0014 — Agent plugin: speed-limited playout replaces `duration_s`",
+          "text": "这是历史设计讨论。下面的默认值与 schema 反映当时方案，实际运行要核对当前代码。"
+        },
+        {
+          "line": 6,
+          "anchor": "## 1. Problem",
+          "text": "问题不是“模型数学算错”，而是模型给的时间可能与下层安全限幅冲突：请求很远、时间很短，最终只走了一部分。"
+        },
+        {
+          "line": 22,
+          "anchor": "## 2. Decision",
+          "text": "改为让工具层按速度预算自动拆步。下方程序安全链仍保留，不能因为前面做了插值就省略逐步检查。"
+        },
+        {
+          "line": 33,
+          "anchor": "Honest scoping of that guarantee: `DeltaLimitApprover` measures against the",
+          "text": "这里明确限制保证的范围：限幅参考是上一条获准指令，插值起点可能是观测值，两者不一致时仍可能触发裁剪。执行完整块也不保证物理到位。"
+        },
+        {
+          "line": 44,
+          "anchor": "Resolved knobs (user decisions, 2026-07-14):",
+          "text": "文档写到默认比例 0.5，但本页固定版本的 _DEFAULT_SPEED_FRAC 已是 0.1；后来的工具也要求 note。不要把旧设计中的数值当成当前配置。"
+        },
+        {
+          "line": 54,
+          "anchor": "## 3. Toolset changes (`_tools.py`)",
+          "text": "开始描述绝对目标插值方案：先检查固定维度与上下界，再按每维预算选出足够多的路点。"
+        }
+      ]
+    },
+    "src/inspect_robots/rollout.py#325-494": {
+      "title": "控制回路每次只推进一个小步",
+      "summary": "主循环收集反馈、向控制器取一个动作、做检查、执行并记录结果。",
+      "inputs": "最新观测、策略、控制器、审批器、机器人、操作员输入和步数上限。",
+      "returns": "逐步累积的 TrialRecord；遇到终止条件或错误时退出。",
+      "example": "一条移动命令可含 21 个小步，这个 while 会推进 21 次，但不一定每一步都重新调用模型。",
+      "code_sha256": "5dcd7b6867f1016eea45bfbed4deaad74c06daf701c12b55fc3d17148bd95060",
+      "blocks": [
+        {
+          "line": 325,
+          "anchor": "while t < max_steps:",
+          "text": "t 是控制小步序号。循环有 max_steps 上限，不是每次循环都对应一次大模型推理。"
+        },
+        {
+          "line": 327,
+          "anchor": "if operator_input is not None and console_ok:",
+          "text": "先轮询操作员输入。控制台出错会关闭该输入通道并告警，避免一个 UI 故障直接伪装成机器人故障。"
+        },
+        {
+          "line": 339,
+          "anchor": "if poll is not None:",
+          "text": "记录新收到的话及来源；同时准备“自上次策略调用以来”的审批反馈和操作员消息，避免反复重送同一条。"
+        },
+        {
+          "line": 357,
+          "anchor": "if poll is not None and poll.end is not None:",
+          "text": "操作员要求结束时，保存可选判定与说明，退出本轮。这个分支发生在取新动作之前。"
+        },
+        {
+          "line": 373,
+          "anchor": "try:",
+          "text": "给观测补上当前步号和反馈，再调用 controller.next_action。控制器决定从缓存取小步还是重新询问策略。"
+        },
+        {
+          "line": 388,
+          "anchor": "inferences = store.get(_INFER_KEY, [])",
+          "text": "只有控制器真的重新调用策略，才增加 inference 事件并推进反馈游标。这里统计的是策略调用，不保证等于底层模型请求次数。"
+        },
+        {
+          "line": 410,
+          "anchor": "# A malformed action is the policy's fault; catching it here keeps it",
+          "text": "下发之前检查动作维数和有限值。策略发出了错误数据，要作为策略错误记录，不能交给机械臂去发现。"
+        },
+        {
+          "line": 433,
+          "anchor": "# Policy-requested stop (plan 0008 §3d), captured from the",
+          "text": "先记住策略的停止意图，避免后面的审批器改写 metadata 时丢失它。注意：这时尚未退出，后面仍会执行一次 step。"
+        },
+        {
+          "line": 441,
+          "anchor": "try:",
+          "text": "动作过审批链；若被换成新对象，记录改写原因。审批器自身异常也转成安全中止。"
+        },
+        {
+          "line": 455,
+          "anchor": "# Recheck because an approver may mutate the array in place and return it.",
+          "text": "审批后再查一次有限值，防止审批器引入 NaN 或无穷大。"
+        },
+        {
+          "line": 467,
+          "anchor": "try:",
+          "text": "真正调用 embodiment.step 发出本小步；随后记录动作、读回与相机帧。停止检查在后面的循环尾部，完整时序可看“机器人执行与结束判断”片段。"
+        }
+      ]
+    },
+    "src/inspect_robots/rollout.py#442-467": {
+      "title": "审批结果为什么要再验证一次",
+      "summary": "这段紧邻硬件下发之前，处理审批异常、记录改写，并检查审批后动作是否仍有效。",
+      "inputs": "一个已经通过策略侧形状与有限值检查的 Action，以及本轮 store。",
+      "returns": "经过审批且仍为有限数值的动作，或者 SafetyAbort。",
+      "example": "某关把目标裁小后，记录会反馈给下一次策略调用；如果审批器反而造出 NaN，要立即停止。",
+      "code_sha256": "976a462d3c192e91b92452ae7e2a8354751d385698229e74257ee6dc1d94dbda",
+      "blocks": [
+        {
+          "line": 442,
+          "anchor": "reviewed = approver.review(action, store)  # may raise SafetyAbort",
+          "text": "调用安全链。已分类的框架异常保留类型，其它审批器异常被归为 SafetyAbort。"
+        },
+        {
+          "line": 448,
+          "anchor": "if reviewed is not action:",
+          "text": "框架通过“返回对象是否还是原对象”识别改写，读取 clamped / delta_clamped 标记，并把这次干预写入记录和反馈队列。"
+        },
+        {
+          "line": 453,
+          "anchor": "action = reviewed",
+          "text": "后面使用获准版本，不再使用原先请求值。即使审批器原地改了数组并返回同一对象，下面的有限值复查也会覆盖。"
+        },
+        {
+          "line": 456,
+          "anchor": "non_finite_detail = _non_finite_detail(action.data)",
+          "text": "这次复查属于安全层：错误是审批器返回了坏数值，因此标为 SafetyAbort，而不是把责任记给模型。"
+        }
+      ]
+    },
+    "src/inspect_robots/rollout.py#468-521": {
+      "title": "下发、记录，然后处理结束条件",
+      "summary": "这一段展示真实的执行顺序：step 完成后记录结果，再检查硬件终止、截断和策略停止。",
+      "inputs": "获准动作、机器人返回的 StepResult，以及之前保存的 requested_stop。",
+      "returns": "新增一条 StepRecord；若应结束则退出，否则用结果作为下一次观测。",
+      "example": "R5 案例的 done 也走了一次保持目标的 step：1553 个普通控制步加 1 个结束保持步，实际共 1554 次。",
+      "code_sha256": "5c7b298941764a9ce410e365b5259fbb4e06515cf83eb3b922115b074a1c6fbb",
+      "blocks": [
+        {
+          "line": 468,
+          "anchor": "result: StepResult = embodiment.step(action)",
+          "text": "这里才进入具体机器人实现。接口返回 StepResult；硬件异常会被记录，并统一为 EmbodimentFault。"
+        },
+        {
+          "line": 475,
+          "anchor": "sink.log_step(t, obs, action, result)",
+          "text": "先把小步交给日志接收器，再把运动后图像按 t+1 存入 FrameStore。记录中可以用轻量引用代替大图数组。"
+        },
+        {
+          "line": 484,
+          "anchor": "record.steps.append(",
+          "text": "StepRecord 把运动前的观测、这次获准动作、运动后的结果和两组图片引用关联起来，方便回看因果顺序。"
+        },
+        {
+          "line": 494,
+          "anchor": "record.events.append(",
+          "text": "追加步事件并令 t 加一。到这里，本次 step 已经执行并记录。"
+        },
+        {
+          "line": 499,
+          "anchor": "if result.terminated:",
+          "text": "优先检查机器人明确报告的终止或截断；这些结果比策略自称完成更优先。"
+        },
+        {
+          "line": 507,
+          "anchor": "if requested_stop:",
+          "text": "然后才处理策略的 request_stop，将试次记为截断并保存原因。done 结束运行，但不自动证明任务成功。"
+        },
+        {
+          "line": 514,
+          "anchor": "obs = result.observation",
+          "text": "没有结束就把 result.observation 更新成下一轮观测。如果 while 因步数耗尽自然结束，原因是 max_steps。"
+        }
+      ]
+    },
+    "src/inspect_robots/controller.py#46-67": {
+      "title": "缓存一段动作，逐步取出执行",
+      "summary": "DefaultController 在缓存耗尽时调用策略，平时只从队列里取下一个小步。",
+      "inputs": "策略、最新观测、当前步号、每轮共享的 store 与重规划间隔。",
+      "returns": "本控制时刻应执行的一个 Action。",
+      "example": "策略生成 100 步，但 replan_interval=20 时只缓存前 20 步；走完后依据新观测重新规划。",
+      "code_sha256": "aa6ff9522f4704ef80e242b595445a53347c221b68145bc02addc4aad31ab080",
+      "blocks": [
+        {
+          "line": 46,
+          "anchor": "class DefaultController:",
+          "text": "“一段内开环”表示播放缓存小步时不再问策略；并不表示绕过逐步审批或不记录传感器。"
+        },
+        {
+          "line": 49,
+          "anchor": "def __init__(self, replan_interval: int | None = None):",
+          "text": "重规划间隔要么不指定，要么至少为 1。None 表示默认取完整动作块。"
+        },
+        {
+          "line": 58,
+          "anchor": "buffer: deque[Action] = store.setdefault(_BUFFER_KEY, deque())",
+          "text": "队列保存在本轮 store 中。为空时才调用 policy.act；因此控制小步数通常多于策略决策次数。"
+        },
+        {
+          "line": 61,
+          "anchor": "take = self.replan_interval or len(chunk)",
+          "text": "最多取 replan_interval 个动作，并记录真正缓存的数量。日志不能把被截掉的块尾巴也算成执行过。"
+        },
+        {
+          "line": 67,
+          "anchor": "return buffer.popleft()",
+          "text": "popleft 只弹出队首的一个动作，交给 rollout 继续审批和执行。"
+        }
+      ]
+    },
+    "plans/0001-foundation-design.md#471-549": {
+      "title": "设计文档中的职责划分与节拍约定",
+      "summary": "这里是原链接真正指向的第 9 节，包含覆盖早期方案的修订规则。",
+      "inputs": "控制循环、控制器、状态记录等职责上的设计冲突。",
+      "returns": "关于节拍、重规划、图像存储、评分与动作语义的设计约束。",
+      "example": "读 R1 时应看 Reversed 后的新约定：框架不再自己等待每个控制周期，由需要实时节拍的机器人实现负责。",
+      "code_sha256": "60c3c42075c2bdba308bc6393c8ba1a7794820b808ad294007e50a97bca6e3e3",
+      "blocks": [
+        {
+          "line": 471,
+          "anchor": "## 9. v3 critique resolutions (BINDING — overrides earlier sections on conflict)",
+          "text": "这是设计文档的修订章节。标记为 binding 的内容会覆盖文档前面与之冲突的旧方案。"
+        },
+        {
+          "line": 477,
+          "anchor": "- **R1 — `step()` timing contract.** `Embodiment.step()` **returns as soon as the",
+          "text": "R1 最初写 step 立即返回，但紧接着注明这项决定在 2026-07-14 被反转：rollout 不负责墙钟节拍，机器人可在 step 内自行等待。"
+        },
+        {
+          "line": 488,
+          "anchor": "Original resolution (superseded above): The **framework owns pacing** to the",
+          "text": "这一段明确叫 Original resolution，已被上面替代。不要把这里“框架控制节拍”的旧说法当成现行行为。"
+        },
+        {
+          "line": 496,
+          "anchor": "- **R2 — per-trial seeding.** The seed for scene `s`, epoch `e` is",
+          "text": "R2 为每个场景和重复轮数派生种子，使随机策略的重复实验可复现，同时不会所有轮都意外采用同一个随机序列。"
+        },
+        {
+          "line": 501,
+          "anchor": "- **R3 — `Controller` is a single-method, stateful middleware.** Replace the",
+          "text": "R3 把控制器统一为 next_action：什么时候问策略、缓存多少步，由控制器内部决定，主循环只管每次推进一步。"
+        },
+        {
+          "line": 512,
+          "anchor": "- **R4 — preprocessing ownership (resolves §2↔§3.7 conflict).** The **policy**",
+          "text": "R4 分配预处理职责：策略处理模型专属图像/数值格式，控制器处理跨时间的信息，机器人侧提供传感器帧。"
+        },
+        {
+          "line": 518,
+          "anchor": "- **R5 — `FrameStore` owns frames, not sinks.** The rollout owns a `FrameStore`",
+          "text": "R5 让 FrameStore 拥有帧文件，日志只存引用，避免相机帧把内存撑满，也让评分不依赖某个可视化插件。"
+        },
+        {
+          "line": 525,
+          "anchor": "- **R6 — operator judgement is a recorded rollout event, not a live scorer.** The",
+          "text": "R6 强调先记录判断，再让 scorer 读取。这里含早期 v0 描述；当前 grader 具体何时执行，应以 eval.py 和 grader.py 为准。"
+        },
+        {
+          "line": 532,
+          "anchor": "- **R7 — scene realizability in `compat`.** An `Embodiment` declares the setup",
+          "text": "R7 检查场景可实现性；R8 把动作语义放在动作空间，而不是每个小步都复制一份。"
+        },
+        {
+          "line": 542,
+          "anchor": "- **R9 — namespace reducers vs metrics.** `reducers.mean`/`reducers.pass_at_k`",
+          "text": "R9 区分“多轮分数怎样归约”和“总体指标怎样统计”；R10 记录当时暂缓实现的功能，不代表当前版本永远没有这些功能。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#960-976": {
+      "title": "模型只说话、不调用工具时怎么办",
+      "summary": "这是 act 中“缺少工具调用”分支的尾部，给出兼容性提示或要求模型修正。",
+      "inputs": "前面累积的连续失败次数，以及本次回复没有工具调用的情况。",
+      "returns": "一次提醒后继续询问模型；达到上限则报错。",
+      "example": "“我准备抬起机械臂”只是文字，不会让机械臂动。真正执行需要合法工具调用。",
+      "code_sha256": "a9be771dbff13bc9764cdc9fde56ad598c034ef7914e40c0e108a93d8d3db823",
+      "blocks": [
+        {
+          "line": 960,
+          "anchor": "\"\\nnote: some OpenAI-compatible endpoints accept `tools` but \"",
+          "text": "这几行是错误提示字符串的一部分：有些兼容端点接收 tools 参数，却不会真的生成工具调用，应核对服务支持的协议。"
+        },
+        {
+          "line": 965,
+          "anchor": "raise RuntimeError(error)",
+          "text": "连续失败达到前面检查的阈值时抛出异常。这里不是每次没有工具调用都立即报错。"
+        },
+        {
+          "line": 966,
+          "anchor": "self._messages.append(",
+          "text": "还没达到阈值时，往对话追加“请给一个工具调用”的提醒；按需看图模式使用对应版本。"
+        },
+        {
+          "line": 976,
+          "anchor": "continue",
+          "text": "continue 回到模型请求循环。没有生成动作块，因此这次文字回复不会直接推进机器人。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#385-412": {
+      "title": "可纠正的参数错误怎样反馈",
+      "summary": "移动工具先检查说明、参数字典、维度名和数值类型，再生成动作。",
+      "inputs": "模型工具调用中的 note 与 targets/deltas。",
+      "returns": "ToolResult.error 提供具体修正提示；合法参数继续向后处理。",
+      "example": "把 left_j0 拼错时，错误会列出允许的名字，模型可以据此重试，而不是让错误值传给 SDK。",
+      "code_sha256": "cb6d14787bd006dfc1c470230bcddb266129033f70af171f422961c5d4e32bec",
+      "blocks": [
+        {
+          "line": 385,
+          "anchor": "call_note = arguments.get(\"note\")",
+          "text": "移动必须有非空说明。缺失时返回错误对象，这一路不会生成运动。"
+        },
+        {
+          "line": 391,
+          "anchor": "values_key = \"targets\" if self._absolute else \"deltas\"",
+          "text": "绝对模式读取 targets，相对模式读取 deltas，且要求至少有一个名字与数值。"
+        },
+        {
+          "line": 396,
+          "anchor": "vector = np.zeros(len(self._labels))",
+          "text": "建立向量和点名维度列表。只有注册的维度名才能映射为数组下标。"
+        },
+        {
+          "line": 404,
+          "anchor": "if isinstance(raw, bool) or not isinstance(raw, (int, float)):",
+          "text": "布尔值不是有效运动数值；普通数值还要能转换为有限浮点数。片段末尾只到有限值判断，后面的错误返回与分派在完整 _move 中。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#60-62": {
+      "title": "连续错误的停止阈值",
+      "summary": "用常量限制同一决策过程里的反复无效调用。",
+      "inputs": "act 内部累积的 failures。",
+      "returns": "达到 3 次连续错误时，相应分支停止继续询问。",
+      "example": "这不是机械臂抓取最多重试 3 次，也不是整个任务最多调用模型 3 次。",
+      "code_sha256": "384869a2fe8d9bca4c269af4e68e9e25fc4edd63eef91edb756f411d177a3965",
+      "blocks": [
+        {
+          "line": 60,
+          "anchor": "_MAX_CONSECUTIVE_FAILURES = 3",
+          "text": "3 表示工具调用/回复连续出错的阈值。具体何时增加 failures 要看 act 分支，例如首次无图拒绝并不一定计为一次格式错误。"
+        },
+        {
+          "line": 61,
+          "anchor": "# Shared by the camera label writer and the reader that recovers revealed",
+          "text": "后两行是下一个常量的注释，讨论相机标签读写一致性，和这个失败阈值无关。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1133-1141": {
+      "title": "预算耗尽时由程序生成放弃动作",
+      "summary": "在调用预算等限制触发后，用程序构造一个 give_up 工具调用，走统一停止通道。",
+      "inputs": "已绑定工具集、当前观测和放弃原因 why。",
+      "returns": "包含停止标记的 ActionChunk。",
+      "example": "这不是模型主动说“我放弃”，因此不会被伪装成模型输出写入对话。",
+      "code_sha256": "c8bc3388d9c1fe0eee0425c0219dfda6eeea01cb1d5419cf67e5942f5b55ed65",
+      "blocks": [
+        {
+          "line": 1133,
+          "anchor": "def _forced_give_up(self, toolset: Toolset, observation: Observation, why: str) -> ActionChunk:",
+          "text": "_forced_give_up 是程序级兜底，输入是程序已经确定的停止原因。"
+        },
+        {
+          "line": 1134,
+          "anchor": "# Echoed but never appended to _messages: the synthetic call is not",
+          "text": "只回显原因，不把合成调用塞进模型对话，保持来源真实。"
+        },
+        {
+          "line": 1137,
+          "anchor": "synthetic = ToolCall(id=\"budget\", name=\"give_up\", arguments=json.dumps({\"reason\": why}))",
+          "text": "构造一个 id=budget 的 give_up 调用，让同一工具执行器生成停止动作。"
+        },
+        {
+          "line": 1139,
+          "anchor": "if result.chunk is None:  # pragma: no cover - synthetic stop is structurally valid",
+          "text": "如果连结构上合法的合成停止都没生成动作块，就报错；否则将它交给控制回路结束试次。"
+        }
+      ]
+    },
+    "src/inspect_robots/rollout.py#441-466": {
+      "title": "审批器发生异常时按安全中止处理",
+      "summary": "这段与逐步审批片段重叠，重点是错误分类与改写反馈。",
+      "inputs": "待审批动作，以及审批器和本轮 store。",
+      "returns": "合法获准动作，或停止运行的安全异常。",
+      "example": "不能把审批器崩溃当作“算了，直接发给机器人”；这里会中止。",
+      "code_sha256": "eec8c85686830a9d9e8bdeb9df2dcf293bf9faf5aa1aba9d56496d55d68c7f3f",
+      "blocks": [
+        {
+          "line": 441,
+          "anchor": "try:",
+          "text": "先调用 review。框架已经分类的错误保留类型，普通异常转换成 SafetyAbort，并先记录现场上下文。"
+        },
+        {
+          "line": 448,
+          "anchor": "if reviewed is not action:",
+          "text": "若审批器换了动作对象，就记录 clamped 等标记，下一次策略观测能知道动作曾被修改。"
+        },
+        {
+          "line": 453,
+          "anchor": "action = reviewed",
+          "text": "只使用审批后的动作。接着再次检查有限值，防止检查代码本身产生非法数字。"
+        },
+        {
+          "line": 458,
+          "anchor": "raise _record_failure(",
+          "text": "坏的审批输出按安全中止处理，不能带着 NaN 或无穷大继续下发。"
+        }
+      ]
+    },
+    "src/inspect_robots/errors.py#54-66": {
+      "title": "三类错误为什么处理不同",
+      "summary": "这些异常类让评测器区分策略问题、硬件故障和安全否决。",
+      "inputs": "其它模块抛出的具体异常。",
+      "returns": "错误的类型标签；是否继续下一轮由评测器按类型处理。",
+      "example": "参数生成失败与 CAN/机械臂故障不能混用同一种“失败后继续”策略。",
+      "code_sha256": "acd789068c68c62bef42c8e19f45fa86328e18fb8b4fadaccf0ea087bfa09972",
+      "blocks": [
+        {
+          "line": 54,
+          "anchor": "class PolicyError(InspectRobotsError):",
+          "text": "PolicyError 表示策略推理或输出有问题。该试次失败；是否继续后续试次还受 fail_on_error 配置控制。"
+        },
+        {
+          "line": 61,
+          "anchor": "class EmbodimentFault(InspectRobotsError):",
+          "text": "EmbodimentFault 表示机器人或适配器故障，会停止评测，需要现场处理。"
+        },
+        {
+          "line": 65,
+          "anchor": "class SafetyAbort(InspectRobotsError):",
+          "text": "SafetyAbort 表示安全层明确拒绝继续，同样停止评测。这几个类的定义本身不执行急停动作，实际停机由上层与机器人实现承担。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#42-48": {
+      "title": "让结束总结留下可复用的经验",
+      "summary": "这是 done 和 give_up 工具里 hindsight 参数的说明文本。",
+      "inputs": "模型在本次运行中获得、能够由证据支持的认识。",
+      "returns": "一段写给后续执行者的具体建议，或没有合格经验时的 none。",
+      "example": "可记录经过测量的相机偏置或抓取注意事项；不能把一次猜测写成永久标定真值。",
+      "code_sha256": "14453b3b4a5a0e532311233d8dbaa46923d728fd2c4ddafcb3621a2e300eef20",
+      "blocks": [
+        {
+          "line": 42,
+          "anchor": "_HINDSIGHT_DESCRIPTION = (",
+          "text": "这里只定义字段描述，不会自动训练模型或修改权重。"
+        },
+        {
+          "line": 43,
+          "anchor": "\"What do you know now that you wish you had known at the start of this episode? \"",
+          "text": "中文意译：现在知道哪些事，是本次开始时就希望知道的？请写具体、可迁移的机器人和任务事实。"
+        },
+        {
+          "line": 44,
+          "anchor": "\"Concrete, transferable facts about this rig, task, or embodiment (camera mounting \"",
+          "text": "示例包括相机安装、桌面与基座几何、夹爪方向和控制器行为。没有可靠内容时写 none，而不是编造经验。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#326-342": {
+      "title": "done 怎样变成控制回路能识别的停止请求",
+      "summary": "把完成或放弃的工具调用封装成带 request_stop 标记的单步动作块。",
+      "inputs": "工具名 done/give_up、说明参数与当前观测。",
+      "returns": "一个携带停止原因和可选经验的 ActionChunk；成功与否仍要另行判断。",
+      "example": "当前固定版本的 rollout 会先处理并执行这一保持状态的 step，再检查 requested_stop 退出；不要把 done 理解成跳过执行器的硬急停。",
+      "code_sha256": "3ecafc8617862815e1ff28d7b3d8c56ea64b6b46513d9c2502dcca842c799a4f",
+      "blocks": [
+        {
+          "line": 326,
+          "anchor": "def _stop(self, name: str, arguments: dict[str, Any], observation: Observation) -> ToolResult:",
+          "text": "先读当前状态，用它作为停止动作的数据，并取 summary 或 reason 作为结束说明。"
+        },
+        {
+          "line": 329,
+          "anchor": "meta = {\"request_stop\": True, \"stop_reason\": name, \"stop_detail\": detail}",
+          "text": "request_stop=True 告诉控制回路：执行到这一步后结束。stop_reason 区分完成、放弃等原因。"
+        },
+        {
+          "line": 330,
+          "anchor": "hindsight = arguments.get(\"hindsight\")",
+          "text": "只有非空且不是 none 的经验才写进 metadata，避免占位文字污染后续学习材料。"
+        },
+        {
+          "line": 335,
+          "anchor": "action = Action(",
+          "text": "构造一个携带状态与停止标记的 Action，再装成长度为 1 的动作块，走统一的控制链。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#812-849": {
+      "title": "把 agent 对话、用量和经验写进试次记录",
+      "summary": "on_trial_end 在试次结束后整理协议记录、对话文件、经验和可获得的模型用量。",
+      "inputs": "TrialRecord、日志目录、运行 ID，以及策略内部积累的信息。",
+      "returns": "相对路径指向的 transcript 文件，以及 trial metadata 中的 hindsight / llm_usage 等字段。",
+      "example": "本次 R5 使用的是信箱策略，其日志不能自动获得这里 API agent 的用量统计，需要另外接入 Codex 用量记录。",
+      "code_sha256": "df39f90f48914d4843e618fa4c995eb3ab026eeb8dc84786c061ee07396f241a",
+      "blocks": [
+        {
+          "line": 812,
+          "anchor": "def on_trial_end(self, record: TrialRecord, log_dir: str, run_id: str) -> None:",
+          "text": "这是试次结束钩子。遇到 Live 客户端时尽力清理连接，清理异常不应反过来破坏试次收尾。"
+        },
+        {
+          "line": 819,
+          "anchor": "if self._capture is not None:",
+          "text": "如果启用了协议捕获，结束捕获并保存路径；捕获未真正启动时发出诊断。"
+        },
+        {
+          "line": 825,
+          "anchor": "hindsight = self._hindsight.strip() if isinstance(self._hindsight, str) else \"\"",
+          "text": "将有效经验写入 trial metadata，方便后续导出学习笔记。"
+        },
+        {
+          "line": 829,
+          "anchor": "messages = self.transcript()",
+          "text": "取得经过清理的对话记录。没有消息时提前返回；否则按 run_id、scene_id 和 epoch 组织独立 JSONL 文件。"
+        },
+        {
+          "line": 839,
+          "anchor": "with path.open(\"w\", encoding=\"utf-8\") as f:",
+          "text": "一条对话消息写一行 JSON，便于流式读取与审计。保存相对路径，使整个日志目录可以搬到其它机器。"
+        },
+        {
+          "line": 845,
+          "anchor": "if self._calls_used:",
+          "text": "只有确实调用过模型客户端，才写 llm_calls 与累积 usage。usage 缺失不等于消耗为 0；字段含义取决于返回这些用量的客户端。"
+        }
+      ]
+    },
+    "plans/0047-stop-tool-hindsight.md#1-90": {
+      "title": "设计背景：结束时怎样保留经验",
+      "summary": "这份实现计划说明 hindsight 为什么加入停止工具，以及如何写入两处记录。",
+      "inputs": "每次实验反复学习同样事实的问题，和既有 done/give_up 停止通道。",
+      "returns": "在工具说明中要求经验，在执行和日志中保存有效内容，同时允许程序强制放弃时不填写。",
+      "example": "收集“指尖长度经过核验为多少”这类事实，不等于自动把经验反馈给下一轮；是否带入下一轮另由实验协议决定。",
+      "code_sha256": "f8b23e230e84708bd6b560e293f4c2ed43232bfd06a9f07d0eee4ef5bb472ea6",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "# Stop-tool hindsight Implementation Plan",
+          "text": "这是历史实现计划，其中开发命令和版本号属于当时工作环境，不是本页要求你执行的操作。"
+        },
+        {
+          "line": 7,
+          "anchor": "**Goal:** LLM agents relearn the same rig- and task-specific facts on every",
+          "text": "目标是在结束时询问“希望开始时就知道什么”，并同时保存在停止动作 metadata 和试次 metadata 中。"
+        },
+        {
+          "line": 16,
+          "anchor": "**Architecture:** the `hindsight` parameter is schema-required on both stop",
+          "text": "schema 要求模型填写，但执行器允许缺失：预算耗尽时的强制 give_up 是程序生成的，没有模型能再回答经验问题。"
+        },
+        {
+          "line": 31,
+          "anchor": "## Global Constraints",
+          "text": "这一节描述当时的开发与测试约束，帮助理解实现的验证范围；不参与机器人控制。"
+        },
+        {
+          "line": 68,
+          "anchor": "## Reference: current wiring (main @ 01fd2659)",
+          "text": "这里列的是更早基线的接线位置。看当前行为时应打开本页 _stop、reset、on_trial_end 对应的固定版本代码。"
+        }
+      ]
+    },
+    "src/inspect_robots/grader.py#129-251": {
+      "title": "让视觉模型按图像与标准判定结果",
+      "summary": "VLM grader 组织初始/最终图像与 rubric，调用视觉模型，并把判定写进试次。",
+      "inputs": "TrialRecord、Scene、评分标准，以及视觉模型客户端配置。",
+      "returns": "成功/失败判断、说明与来源事件；缺图、网络或解析失败时保留为未评分。",
+      "example": "“木块完整留在盘内”应写进评分标准。执行策略说 done 不能替代这个证据判断。本次 R5 案例没有调用这个 VLM grader。",
+      "code_sha256": "4111e89c44e244e8e37e6376b7a55b692a1b4562c7bef9b44d245b98deda5a5a",
+      "blocks": [
+        {
+          "line": 129,
+          "anchor": "class _VLMGrader:",
+          "text": "构造函数只保存模型、评分标准和接口选项。API key 是运行配置，不是应公开到网页或日志的内容。"
+        },
+        {
+          "line": 153,
+          "anchor": "def _rubric_for(self, scene: Scene) -> str:",
+          "text": "优先使用场景自己的非空 rubric；没有才退回整次运行共用的标准。"
+        },
+        {
+          "line": 165,
+          "anchor": "def _messages(",
+          "text": "把任务说明、标准和图像拼成模型消息，要求仅凭可见证据判断，并以规定的 GRADE 行结尾。"
+        },
+        {
+          "line": 184,
+          "anchor": "for phase, frames in ((\"initial\", initial), (\"final\", final)):",
+          "text": "每张图前都标明 initial/final 和相机名，避免模型把开始与结束时刻混淆。"
+        },
+        {
+          "line": 201,
+          "anchor": "if record.operator_judgement is not None:",
+          "text": "已有操作员判定，或机器人明确报告了可采用的终止结果时，直接采用，不再重复消耗模型调用。策略的 done 通常是截断，不会自动走这个硬件终止成功分支。"
+        },
+        {
+          "line": 210,
+          "anchor": "try:",
+          "text": "优先使用停车后的无遮挡图，否则用末次执行结果的图；取不到最终图就不能进行这次视觉判分。"
+        },
+        {
+          "line": 224,
+          "anchor": "messages = self._messages(scene.instruction, self._rubric_for(scene), initial, final)",
+          "text": "调用模型并解析 GRADE。网络失败或没有可识别的结论时，告警后保持未评分，不伪造成功。"
+        },
+        {
+          "line": 241,
+          "anchor": "judgement = str(matches[-1]).lower()",
+          "text": "取得有效结论后再一起写入判断、说明、来源，以及是否使用停车后的图像。"
+        }
+      ]
+    },
+    "src/inspect_robots/grader.py#76-82": {
+      "title": "创建人工判分组件",
+      "summary": "这是返回 _OperatorGrader 的工厂函数，不是实际弹出问题的位置。",
+      "inputs": "可选的统一操作员会话。",
+      "returns": "人工判分器对象。",
+      "example": "真正在终端询问 y/n/partial/skip 的逻辑，要看 OperatorSession.prompt_verdict。",
+      "code_sha256": "2ebc56f7d7df4d828d27a94f6d39d81a5ec30a052cd89ad04ef94b5192bebae8",
+      "blocks": [
+        {
+          "line": 76,
+          "anchor": "def operator_grader(session: OperatorSession | None = None) -> _OperatorGrader:",
+          "text": "调用 operator_grader 会创建一个组件，方便通过注册表或 Python API 接入评分前流程。"
+        },
+        {
+          "line": 77,
+          "anchor": "\"\"\"The builtin human grader: prompt for a verdict and optional notes.",
+          "text": "文档约定：已有确定判定时采用它，不重复问；输入端无法回答时保留无判定，而不是一直阻塞。"
+        },
+        {
+          "line": 82,
+          "anchor": "return _OperatorGrader(session)",
+          "text": "这里只返回对象。是否执行 grade、何时向用户提问，由评测编排与会话实现决定。"
+        }
+      ]
+    },
+    "src/inspect_robots/session.py#678-741": {
+      "title": "向操作员询问成功、失败或跳过",
+      "summary": "prompt_verdict 将已有结论或新输入的人工判断写入 TrialRecord，并保留来源。",
+      "inputs": "试次记录、场景评分标准和终端输入。",
+      "returns": "operator_judgement、operator_note 和对应事件；EOF 或 skip 可保持无判定。",
+      "example": "人工选择 skip 表示没有给出判断，不应该在实验报告里伪装成一次有证据的成功或失败。",
+      "code_sha256": "727ec394a4f2c2cdff6ce70b0583d6e144d4ee673c32448d43281165758de08b",
+      "blocks": [
+        {
+          "line": 678,
+          "anchor": "def prompt_verdict(self, record: TrialRecord, scene: Scene) -> None:",
+          "text": "先关闭粘滞状态行，避免交互提示与运行进度混在同一行。"
+        },
+        {
+          "line": 693,
+          "anchor": "if record.operator_judgement is not None:",
+          "text": "已有控制台判定就保留；如果机器人报告了明确可采用的终止结果，也直接记录来源并返回，不再追问。"
+        },
+        {
+          "line": 706,
+          "anchor": "rubric = scene.metadata.get(\"rubric\")",
+          "text": "显示本场景 rubric，让人按同一标准判断。若提前结束或耗尽步数，还显示具体结束原因。"
+        },
+        {
+          "line": 718,
+          "anchor": "with suppress(OSError):",
+          "text": "清理旧输入，避免刚才为别的提示按下的键被误当成评分。随后循环读取，直到输入属于允许答案。"
+        },
+        {
+          "line": 723,
+          "anchor": "except EOFError:",
+          "text": "遇到 EOF 表示终端无法提供答案，直接返回，不强行生成判定。"
+        },
+        {
+          "line": 728,
+          "anchor": "try:",
+          "text": "再读取可选说明。只有不是 skip 才写判断；skip 但写了备注，也保留事件，以免丢掉人的说明。"
+        }
+      ]
+    },
+    "src/inspect_robots/scorer.py#253-265": {
+      "title": "把已经记录的判定换成分数",
+      "summary": "这个 scorer 只读保存好的 operator_judgement，不再看图或询问用户。",
+      "inputs": "TrialRecord 中已有的判定。",
+      "returns": "一个布尔 Score，并带解释文字。",
+      "example": "没有判定时这里返回 False，但解释是“没有记录判断”；报告时应区分未评分与经过观察确认的物理失败。",
+      "code_sha256": "3bd24d0322d153208dfec1385b46991fd5d605ec9f775ddd96c1254c106d360d",
+      "blocks": [
+        {
+          "line": 253,
+          "anchor": "class _OperatorScorer:",
+          "text": "Scorer 的职责是把已有证据字段换成分数，因此可以在离线日志上重算，不需要再动机器人。"
+        },
+        {
+          "line": 259,
+          "anchor": "verdict = record.operator_judgement",
+          "text": "先读记录。字段为空时返回 False 并说明缺少判断，不能把这一默认值当成相机确认过的失败证据。"
+        },
+        {
+          "line": 262,
+          "anchor": "return Score(",
+          "text": "有判定时交给 is_affirmative_verdict 转成真假，并保留原判定作为解释。"
+        }
+      ]
+    },
+    "src/inspect_robots/eval.py#63-87": {
+      "title": "统一评分前的判断入口",
+      "summary": "把 grader 组件或 before_scoring 回调统一成一个 callable，并提前验证配置。",
+      "inputs": "两种可选入口，最多提供一种。",
+      "returns": "一个 grade(record, scene) 回调，或者 None。",
+      "example": "可以选人工 grader，也可以给自己的判断函数；同时传两个会产生谁覆盖谁的歧义，因此拒绝。",
+      "code_sha256": "1356a5dedcfc9bcd9384f1be5f1fbb3103ca76037f9f3bc1bc851612ff578ab1",
+      "blocks": [
+        {
+          "line": 63,
+          "anchor": "def _grading_hook(",
+          "text": "函数返回的是另一个函数，供评测器在正式 scorer 之前调用，用来填充判断记录。"
+        },
+        {
+          "line": 74,
+          "anchor": "if grader is None:",
+          "text": "未提供 grader 时直接采用 before_scoring；两者都提供则抛配置错误。"
+        },
+        {
+          "line": 78,
+          "anchor": "if isinstance(grader, str):",
+          "text": "字符串 grader 先经注册表创建对象，再检查是否符合 Grader 协议，避免跑完机械臂才发现判分接口坏了。"
+        },
+        {
+          "line": 87,
+          "anchor": "return grader.grade",
+          "text": "返回绑定在该对象上的 grade 方法，后续无需区分它最初是通过名字还是对象提供的。"
+        }
+      ]
+    },
+    "src/inspect_robots/log.py#131-182": {
+      "title": "一份评测日志由哪些部分组成",
+      "summary": "EvalLog 是完整运行记录的结构，提供写成字典和从字典读回的转换。",
+      "inputs": "配置、结果、统计、各场景记录以及可选错误。",
+      "returns": "可序列化并可重新读取的 EvalLog。",
+      "example": "status=success 表示评测流程正常完成，不等于每个机器人任务都物理成功；具体判定应看 samples 和 scores 的证据。",
+      "code_sha256": "921956589cae076d0ca0a43a9e3759c26247311a3bcc46259bbde6a0e77c449b",
+      "blocks": [
+        {
+          "line": 131,
+          "anchor": "class EvalLog:",
+          "text": "把它理解为评测报告的数据容器。version 是日志格式版本，eval 是运行配置，results 是汇总指标，stats 是时间等统计，samples 是各场景明细。"
+        },
+        {
+          "line": 144,
+          "anchor": "def to_dict(self) -> dict[str, Any]:",
+          "text": "asdict 把数据类递归转换成普通字典和序列，便于写 JSON。它没有在这里把内容发送到外部服务。"
+        },
+        {
+          "line": 148,
+          "anchor": "@classmethod",
+          "text": "读回时先核对 schema version，避免用错误格式解释文件。"
+        },
+        {
+          "line": 156,
+          "anchor": "samples = []",
+          "text": "JSON 只有数组，没有 tuple。这里将各类序列恢复成 tuple，并用 get 兼容较早日志缺少部分字段的情况。"
+        },
+        {
+          "line": 174,
+          "anchor": "return cls(",
+          "text": "最后重建各层数据类。所谓不可变主要是外层结构约束，嵌套字典并不因此全部深度冻结，仍应按只读材料使用。"
+        }
+      ]
+    },
+    "src/inspect_robots/eval.py#367-536": {
+      "title": "编排多个场景和重复轮次",
+      "summary": "_run_eval 负责绑定接口、检查配置、准备日志，并逐场景逐轮调用 rollout。",
+      "inputs": "已经解析好的 Task、Policy、Embodiment，以及运行选项。",
+      "returns": "一组评测日志；本片段只展示初始化与试次循环前半段。",
+      "example": "“跑 5 轮”属于这里的 epoch 循环；每轮里面的数百个小步属于 rollout，不是同一个循环。",
+      "code_sha256": "89aec20299bd03f57a174df90997d6dcdc6c77195859ad9a5aa7d0a2c363370b",
+      "blocks": [
+        {
+          "line": 367,
+          "anchor": "def _run_eval(",
+          "text": "这是 eval 的内部主体。此处拿到的组件已经是对象；资源由谁负责关闭，在外层 eval 中决定。"
+        },
+        {
+          "line": 389,
+          "anchor": "# Embodiment-adaptive policies (plan 0008 §3c): an optional bind() hook",
+          "text": "先让可适配策略 bind 机器人声明，再做兼容性检查，最后把时间/步数上限整理成 TaskEnvelope。"
+        },
+        {
+          "line": 403,
+          "anchor": "# Horizon-aware embodiments (plan 0013): an optional bind_task() hook runs",
+          "text": "若插件支持 bind_task，就把预算传进去；然后解析评分器和重复轮数的归约方法，提前发现配置错误。"
+        },
+        {
+          "line": 419,
+          "anchor": "if seed is None:",
+          "text": "未指定种子时生成并记录一个种子；不能把 None 偷换成固定的 0。"
+        },
+        {
+          "line": 424,
+          "anchor": "sink_list: list[LogSink] = sinks if sinks is not None else [JsonLogSink(log_dir)]",
+          "text": "默认创建 JSON 日志接收器和 DefaultController。注意直接 Python API 缺省使用 AutoApprover，不会自动补 CLI 的安全链。"
+        },
+        {
+          "line": 429,
+          "anchor": "# One subdirectory per run: trial ids repeat across runs (scene-epoch),",
+          "text": "每次运行创建独立目录时间戳，避免相同 scene/epoch 的图片或对话覆盖上一次实验。"
+        },
+        {
+          "line": 438,
+          "anchor": "spec = EvalSpec(",
+          "text": "保存运行配置、包版本和 Git 信息。git_commit 来自调用环境，不一定就是框架源码仓库；包版本与工作区提交应分开理解。"
+        },
+        {
+          "line": 455,
+          "anchor": "bus.bind_spaces(embodiment.info.action_space, embodiment.info.observation_space)",
+          "text": "向日志接收器绑定空间、场景和图片目录，然后记录启动事件与计时起点。"
+        },
+        {
+          "line": 472,
+          "anchor": "halted = False",
+          "text": "先算计划总试次数，供错误比例阈值使用；不能只用“目前完成几次”作分母，否则第一次失败就会被错误地视为整个实验 100% 失败。"
+        },
+        {
+          "line": 479,
+          "anchor": "for scene in task.scenes:",
+          "text": "外层遍历场景，内层遍历该场景的重复次数，分别收集分数、判断来源、备注和终止原因。"
+        },
+        {
+          "line": 493,
+          "anchor": "for epoch in range(epoch_spec.count):",
+          "text": "每轮派生独立种子并调用可选开始钩子。开始钩子失败也要生成错误记录；只有成功准备好的轮次才进入 rollout。"
+        },
+        {
+          "line": 516,
+          "anchor": "record = rollout(",
+          "text": "这里调用真正的控制循环，并把控制器、审批器、图像存储和操作员输入都传下去。中断时保存部分记录，后续汇总与评分在片段之外。"
+        }
+      ]
+    },
+    "docs/guide/logging-and-rerun.md#1-90": {
+      "title": "日志、实时界面与回放各负责什么",
+      "summary": "这份使用文档解释规范日志、可视化接收器和帧存储的关系。",
+      "inputs": "运行事件、动作、状态、相机图与可选的可视化依赖。",
+      "returns": "JSON 记录和可选实时界面/回放，不同输出有不同完整性保证。",
+      "example": "需要审计真实下发动作时优先看 actions JSONL；Rerun 为了不阻塞控制，可能在压力下丢可视化帧。",
+      "code_sha256": "08a829c789d25d4645fce985d48f8f375481b8d659c989f4978194607eb61cc8",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "# Logging & Rerun",
+          "text": "这不是控制算法代码，而是日志使用说明。例子中的 eval 运行虚拟 CubePick，不是 R5 真机命令。"
+        },
+        {
+          "line": 3,
+          "anchor": "## The eval log",
+          "text": "EvalLog 汇总配置、结果、统计、场景和错误；读取日志用于事后分析，不会因此重新执行机械臂。"
+        },
+        {
+          "line": 18,
+          "anchor": "Logs are written atomically (temp file + rename), schema-versioned, and carry",
+          "text": "原子写入采用临时文件再重命名，减少留下半个 JSON 的风险。Ctrl+C 通常保留部分试次；具体中断边界仍应对照 eval 的异常约定。"
+        },
+        {
+          "line": 27,
+          "anchor": "## Sinks",
+          "text": "Sinks 订阅运行事件。显式传 sinks 会替换默认列表，若还需要 JSON 文件，应把 JsonLogSink 一起传进去。"
+        },
+        {
+          "line": 52,
+          "anchor": "## Rerun visualization",
+          "text": "Rerun 是可选展示：没有相应依赖就告警并跳过。图像与按臂分组的指令/实测曲线来自声明的空间。"
+        },
+        {
+          "line": 72,
+          "anchor": "Logging is non-blocking. `log_step` snapshots each transition and a background",
+          "text": "显示线程不能拖住机器人控制。队列积压时优先牺牲展示完整性；所以 .rrd 记录的是展示端收到的内容，不保证与全部下发动作一一齐全。"
+        },
+        {
+          "line": 84,
+          "anchor": "The JSON eval log and action side-cars are written outside the Rerun worker and",
+          "text": "规范 JSON 日志和动作旁路文件在可视化工作线程之外写入；相机压缩选项影响展示画面，不能据此假定原始记录也同样被压缩。"
+        }
+      ]
+    },
+    "src/inspect_robots/policy.py#1-60": {
+      "title": "Policy：把观测变成动作计划的一侧",
+      "summary": "模块开头介绍策略接口，并定义需要写进日志的策略配置与能力声明。",
+      "inputs": "观测、任务指令，以及模型推理与动作块相关配置。",
+      "returns": "PolicyConfig、PolicyInfo 与策略协议；本片段尚未展示完整 act 方法。",
+      "example": "语言模型、VLA、脚本或本次 R5 的文件信箱策略，只要满足接口，都可以进入同一控制流程。",
+      "code_sha256": "b358246d6c5dda5d27c5ada486da7f2c839d0e77cb1052bbd2a3d696b8f9f56e",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The Policy (VLA) interface — one of Inspect Robots's two swappable inputs.",
+          "text": "Policy 是可替换的“决策者”：接到观测，输出一段 ActionChunk。框架不要求它一定是大语言模型。"
+        },
+        {
+          "line": 15,
+          "anchor": "from __future__ import annotations",
+          "text": "这些 import 主要引入接口、数据类和类型。TYPE_CHECKING 中的导入只供类型检查使用，不是在这里连接机器人。"
+        },
+        {
+          "line": 30,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "PolicyConfig 记录影响运行的参数。action_horizon 是动作块相关配置，replan_interval 决定何时再规划，temperature 是可选采样参数。"
+        },
+        {
+          "line": 43,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "PolicyInfo 声明策略名称、动作与观测空间、期望节拍，供兼容性检查和日志使用。"
+        },
+        {
+          "line": 54,
+          "anchor": "@runtime_checkable",
+          "text": "Protocol 让已有实现不必继承指定基类，只要提供相应属性与方法即可。末尾展示的只是协议文档开头。"
+        }
+      ]
+    },
+    "src/inspect_robots/embodiment.py#1-60": {
+      "title": "Embodiment：机器人及其环境的一侧",
+      "summary": "模块说明机器人适配器负责传感器、执行、节拍与资源管理。",
+      "inputs": "真实设备或仿真器的接口，以及能力声明。",
+      "returns": "通用的 EmbodimentInfo 和能力标记，真实实现位于具体插件中。",
+      "example": "固定相机和腕部相机属于观测；CAN 指令与实际等待控制周期属于 R5 适配器。",
+      "code_sha256": "8b922dfdd415824565cf7625d9889352e3b92b8948471a8a90478de1e752c90a",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The Embodiment interface — Inspect Robots's second swappable input.",
+          "text": "Embodiment 可以是真机也可以是仿真。它既代表能执行动作的身体，也负责提供该任务世界的观测。"
+        },
+        {
+          "line": 8,
+          "anchor": "Designed around real-robot reality: ``reset`` may drive to a home pose and block",
+          "text": "真机 reset 可能运动，也可能等操作员确认；没有通用的“绝对知道成功”的接口。具体行为要看插件。"
+        },
+        {
+          "line": 12,
+          "anchor": "Per R1 (see the design doc): ``rollout()`` applies no wall-clock pacing of its",
+          "text": "关键节拍约定：rollout 不自己 sleep。需要实时节拍的适配器在 step 内管理等待，并声明 self_paced。"
+        },
+        {
+          "line": 19,
+          "anchor": "from __future__ import annotations",
+          "text": "导入的是共享数据类型和接口，方便各插件使用同一套约定。"
+        },
+        {
+          "line": 33,
+          "anchor": "# Opt-in capability flags an embodiment may advertise.",
+          "text": "这些字符串是能力声明，例如可按种子初始化、可复位、自带成功真值或自行控制节拍；有名字不代表每台机器人都具备该能力。"
+        },
+        {
+          "line": 43,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "EmbodimentInfo 将能力、空间与操作说明集中成描述对象。它本身不负责硬件连接。"
+        }
+      ]
+    },
+    "src/inspect_robots/task.py#1-60": {
+      "title": "Task、Epochs 与任务预算分别是什么",
+      "summary": "模块开头拆开三个概念：任务定义、重复次数与交给机器人的执行预算。",
+      "inputs": "场景、评分器、重复次数、汇总方法和执行上限。",
+      "returns": "Epochs、TaskEnvelope 与 Task 的配置结构。",
+      "example": "一个场景重复 5 次是 epochs=5；每次允许 5000 个控制小步是 max_steps=5000，两个数字不能互换。",
+      "code_sha256": "b6dad6fe23fd152e7d1658ce9fbbff5db2440c694ac7fae32c2fc65eada33f3f",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The Task — an embodiment-agnostic benchmark definition.",
+          "text": "Task 描述实验集合，与选择哪种策略或哪台机器人分离。"
+        },
+        {
+          "line": 20,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "Epochs 把“重复几次”和“怎样合并这些分数”放在一起，默认归约方式是 mean。"
+        },
+        {
+          "line": 31,
+          "anchor": "def __post_init__(self) -> None:",
+          "text": "至少需要 1 次重复，零或负数属于配置错误。"
+        },
+        {
+          "line": 36,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "TaskEnvelope 是给适配器的简化任务卡，只含名字和已经换算好的步数上限，不向它暴露评分器和场景全集。"
+        },
+        {
+          "line": 53,
+          "anchor": "@dataclass",
+          "text": "下面才开始完整 Task 定义；本片段只看到其文档开头，完整校验逻辑可看前面 Task 的专用片段。"
+        }
+      ]
+    },
+    "src/inspect_robots/scene.py#1-54": {
+      "title": "场景、目标与场景列表",
+      "summary": "Scene 表示一组初始条件，Target 描述评分要关注的目标，ListSceneDataset 提供简单迭代。",
+      "inputs": "自然语言任务、可选结构化目标，以及多个场景。",
+      "returns": "可以被 Task 逐个遍历的场景数据。",
+      "example": "“木块从桌面左侧开始”和“木块从右侧开始”可以是不同场景；重复同一场景则由 epochs 控制。",
+      "code_sha256": "5acf241db750d85b64f207251bb6b1441522fe570a610c00fe7773dfb847b9d8",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"Scenes — the robotics analog of Inspect AI's ``Sample``.",
+          "text": "这是数据组织层。场景被重复运行不等于自动把真实桌面恢复原样，真机布置仍需具体实现与现场核对。"
+        },
+        {
+          "line": 19,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "Target 是成功条件的结构化描述：kind 表示哪类目标，spec 保存其参数；真正怎样判断由对应评分逻辑实现。"
+        },
+        {
+          "line": 32,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "Scene 将 ID、给策略的指令、评分目标、初始化种子、布置钩子名称和附加信息打包。"
+        },
+        {
+          "line": 44,
+          "anchor": "class ListSceneDataset:",
+          "text": "ListSceneDataset 只是把场景列表保存起来，提供迭代和长度；不会自己启动任何控制过程。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/_tools.py#1-60": {
+      "title": "工具层：把模型调用翻译成动作块",
+      "summary": "这个模块承担工具参数检查和确定性的动作拆分，安全审批仍在后面。",
+      "inputs": "机器人空间声明、模型给出的工具参数和当前观测。",
+      "returns": "Toolset、动作块、可纠正的错误文字，以及可选运动预检查接口。",
+      "example": "模型写的是命名目标；真正的 CAN 数据包不在这里生成，而在具体机器人 SDK 中。",
+      "code_sha256": "86f46c20fc8a7bc8f248b23fa0c3b535a609997111d8d6c389ea94e2f3d81a19",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The agent's speed-limited tool surface over a bound action space.",
+          "text": "模块职责分两种移动：绝对目标按步长插值，相对位移按单步边界拆分。"
+        },
+        {
+          "line": 9,
+          "anchor": "Tool mistakes come back as structured error strings the LLM can correct.",
+          "text": "参数错误可以返回具体文字让模型改；坏观测和不支持的配置则直接报错，不能假装正常生成动作。"
+        },
+        {
+          "line": 14,
+          "anchor": "from __future__ import annotations",
+          "text": "导入 JSON、数学、NumPy 和框架数据类型，为参数解析、数值计算和动作封装提供基础。"
+        },
+        {
+          "line": 33,
+          "anchor": "_DISPLACEMENT_MODES = frozenset({\"eef_delta_pos\", \"eef_delta_pose\", \"joint_delta\"})",
+          "text": "列出支持的位移/姿态模式，以及工具层允许按其方式处理的旋转表示。声明之外的模式要在绑定时拒绝。"
+        },
+        {
+          "line": 37,
+          "anchor": "_FALLBACK_HZ = 10.0",
+          "text": "常量给出回退频率、单次播放上限、后备步长比例和数值余量；hindsight 文本用于结束时收集经验。"
+        },
+        {
+          "line": 50,
+          "anchor": "#: A motion hook over the exact clipped absolute waypoints for one move call.",
+          "text": "PreCheck 是可选的整段绝对路点检查函数：输入只读二维数组，每行一个目标；返回 None 放行，返回非空文字拒绝。"
+        }
+      ]
+    },
+    "src/inspect_robots/types.py#1-60": {
+      "title": "一份观测和一个动作里装什么",
+      "summary": "Observation 与 Action 是策略、控制器和机器人之间交换的基础数据容器。",
+      "inputs": "按名字组织的图像和状态，以及动作数值与 metadata。",
+      "returns": "统一的观测与动作对象；数值含义由空间声明补充。",
+      "example": "Observation.images[\"wrist\"] 是腕部 RGB 图；Action.data 的第几个数是什么关节，要看 dim_labels 与动作语义。",
+      "code_sha256": "635f652ead34d6c34efa0a96b5f6a391c91dcc827e5e9bd761ebc191f556a9b0",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"Core observation/action data types exchanged between policy and embodiment.",
+          "text": "原始图像采用 H×W×C 的 uint8 数组。模型专属的归一化、缩放等预处理不在这些数据类里。"
+        },
+        {
+          "line": 7,
+          "anchor": "The dataclasses set ``eq=False`` because they carry NumPy arrays, whose",
+          "text": "NumPy 的 == 返回逐元素结果，不是一个真假值，所以数据类关闭自动相等比较，避免比较整个对象时出现歧义。"
+        },
+        {
+          "line": 25,
+          "anchor": "@dataclass(frozen=True, eq=False)",
+          "text": "Observation 汇集图像、状态、任务指令与时间信息。extra 中某些键由 rollout 保留，用于控制步号、审批干预和操作员反馈。"
+        },
+        {
+          "line": 41,
+          "anchor": "images: Mapping[str, ImageArray] = field(default_factory=dict)",
+          "text": "images 和 state 都以名字索引；image_times 可按相机记录时间，state_time 对应状态时间。没有填写时间时不能把缺省值当成可靠采集时间。"
+        },
+        {
+          "line": 49,
+          "anchor": "@dataclass(frozen=True, eq=False)",
+          "text": "Action 很小：data 是动作向量，meta 放停止标记等附加信息。坐标系和绝对/相对语义放在动作空间，避免每步重复且可能不一致。"
+        }
+      ]
+    },
+    "src/inspect_robots/controller.py#1-60": {
+      "title": "Controller：决定何时重新问策略",
+      "summary": "控制器位于策略与逐步执行之间，管理动作缓存和重规划时机。",
+      "inputs": "策略、当前观测、控制步号与本轮 store。",
+      "returns": "每次调用输出一个 Action；需要时才调用 policy.act 获取新动作块。",
+      "example": "“一个模型决定拆成几十步”就是通过控制器缓存实现的；观察帧数、策略调用数与控制步数需要分别计数。",
+      "code_sha256": "34f921fc5641082be4d6e8fca7caf8aae2e3627b035263699bcff820786285ba",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"Controllers — the rollout middleware layer (Inspect's ``@solver`` analog).",
+          "text": "控制器处理时间上的调度，不负责判断任务是否成功，也不直接替代安全审批器。"
+        },
+        {
+          "line": 12,
+          "anchor": "``DefaultController`` plays the first ``replan_interval`` actions of each chunk,",
+          "text": "默认控制器只播放动作块的前 replan_interval 步；None 表示播放完整块后再问策略。"
+        },
+        {
+          "line": 18,
+          "anchor": "import warnings",
+          "text": "deque 用作先进先出缓存；其它导入为后面的控制器实现提供数值、复制与接口工具。"
+        },
+        {
+          "line": 30,
+          "anchor": "_BUFFER_KEY = \"_controller_action_buffer\"",
+          "text": "store 的两个私有键分别保存动作缓存与策略调用记录。_INFER_KEY 一项对应一次 policy.act，不一定对应一次模型 API 请求。"
+        },
+        {
+          "line": 35,
+          "anchor": "@runtime_checkable",
+          "text": "Controller 协议只约定 next_action 方法。具体何时重新规划由实现决定。"
+        },
+        {
+          "line": 46,
+          "anchor": "class DefaultController:",
+          "text": "DefaultController 检查重规划间隔，并在缓存为空时询问策略；完整缓存与出队逻辑见它的专用代码片段。"
+        }
+      ]
+    },
+    "src/inspect_robots/approver.py#1-60": {
+      "title": "Approver：动作下发之前的程序检查",
+      "summary": "模块定义审批器协议与机器人可追加的检查结构，具体裁剪器在文件后面。",
+      "inputs": "Action 与本轮共享 store；可选机器人贡献。",
+      "returns": "获准或被改写的 Action，或者中止执行的 SafetyAbort。",
+      "example": "审批器可以检查数值边界，机器人也可以另外贡献碰撞检查；二者不是同一种保护。",
+      "code_sha256": "a62da1ac1ddac04470c3e568240051768786d2f4bc3c4c82f4d8a3e415c45275",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The Approver — a safety gate between policy output and the embodiment.",
+          "text": "这一层位于模型输出与硬件执行之间。模型给出请求，程序决定是否允许、需要怎样限幅。"
+        },
+        {
+          "line": 18,
+          "anchor": "from inspect_robots.errors import SafetyAbort",
+          "text": "导入共享动作语义、数据类型与安全异常，用统一接口组合不同检查。"
+        },
+        {
+          "line": 24,
+          "anchor": "class Approver(Protocol):",
+          "text": "Approver 协议要求 review(action, store)。它可以返回同一动作、返回改写后的动作，或明确抛出安全中止。"
+        },
+        {
+          "line": 37,
+          "anchor": "class GuardrailContribution:",
+          "text": "GuardrailContribution 是插件接入默认链的描述对象，包含带名字的检查器和需要展示的警告。"
+        },
+        {
+          "line": 55,
+          "anchor": "approvers: tuple[tuple[str, Approver], ...] = ()",
+          "text": "下面开始检查贡献对象的接口形状。片段在校验中途结束；具体边界与变化量算法请看 ClampApprover 和 DeltaLimitApprover。"
+        }
+      ]
+    },
+    "plugins/inspect-robots-agent/src/inspect_robots_agent/policy.py#1-60": {
+      "title": "LLMAgentPolicy 的模块入口",
+      "summary": "这一页开头说明 API agent 的职责，并导入模型协议客户端、观测编码和工具构建模块。",
+      "inputs": "观测与任务，通过配置选定的模型客户端。",
+      "returns": "完整模块中的 LLMAgentPolicy；当前片段主要是文档与依赖列表。",
+      "example": "本次 R5 使用的是本地信箱策略，不会因为日志里注册名叫 claude 就自动走这份 API agent 的客户端。",
+      "code_sha256": "2e58f5ae9b5ac1d57021c65bdfdf5a7029427f06ed4979da30c69473010ae499",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"LLMAgentPolicy — a frontier LLM as a first-class Inspect Robots policy.",
+          "text": "核心想法：在 act 内把观测组织成对话，让模型返回工具调用，再翻译成动作块。模型不会直接写电机通信数据。"
+        },
+        {
+          "line": 6,
+          "anchor": "LLM never sees raw actuation, and every emitted action still passes the",
+          "text": "生成的动作仍要经过 rollout 的审批链。模块说明“不承担安全关键路径”，不表示下层保护可以省略。"
+        },
+        {
+          "line": 14,
+          "anchor": "import copy",
+          "text": "copy、JSON、哈希和路径工具服务于对话、日志与来源记录；httpx 用于网络请求，NumPy 用于数值处理。"
+        },
+        {
+          "line": 30,
+          "anchor": "from inspect_robots.embodiment import EmbodimentInfo",
+          "text": "导入框架接口，让这个插件以普通 Policy 的身份被 eval 使用。"
+        },
+        {
+          "line": 39,
+          "anchor": "from inspect_robots_agent._anthropic import _DEFAULT_MAX_OUTPUT_TOKENS, AnthropicClient",
+          "text": "不同 wire 对应不同客户端；深度、图片编码和工具层另有模块。看到 import 只说明依赖关系，不等于这些客户端都会在一次运行中被调用。"
+        },
+        {
+          "line": 60,
+          "anchor": "_MAX_CONSECUTIVE_FAILURES = 3",
+          "text": "最后的常量控制连续错误阈值；真正的请求循环在 act 函数中。"
+        }
+      ]
+    },
+    "src/inspect_robots/rollout.py#1-60": {
+      "title": "Rollout：执行一个试次的引擎",
+      "summary": "rollout 负责单个场景、单个重复轮次里的闭环执行和逐步记录。",
+      "inputs": "一个场景与策略/机器人组合，以及控制器和审批器。",
+      "returns": "供评分读取的 TrialRecord；这里展示的是模块开头。",
+      "example": "5 个往返试次由 eval 编排，而每一试次里的观察、决策、小步与反馈由 rollout 串联。",
+      "code_sha256": "22550973c7e71311a015d3a2919c85e80be67e7637bfa033beefa6b70b60e6b0",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The rollout engine — the closed control loop at the heart of Inspect Robots.",
+          "text": "闭环是“执行一段后再用新观测决策”；并不要求大模型在每个控制小步都推理。"
+        },
+        {
+          "line": 21,
+          "anchor": "from inspect_robots.approver import Approver",
+          "text": "依赖控制器、审批器、机器人接口，以及能够区分策略、硬件、安全与用户中断的异常类型。"
+        },
+        {
+          "line": 31,
+          "anchor": "from inspect_robots.frames import FrameRef, FrameStore",
+          "text": "FrameStore 负责保存图像；各类 event 函数把复位、推理、审批、操作员反馈和控制小步写成可审计事件。"
+        },
+        {
+          "line": 46,
+          "anchor": "if TYPE_CHECKING:",
+          "text": "TYPE_CHECKING 导入只用于类型提示。后面的私有键存审批与操作员消息队列，供下一次策略调用读取增量。"
+        },
+        {
+          "line": 55,
+          "anchor": "def derive_seed(eval_seed: int | None, scene_seed: int | None, epoch: int) -> int:",
+          "text": "derive_seed 将运行种子、场景种子与轮号组合成可复现种子；此处只显示文档开头，完整算法不在这个节选内。"
+        }
+      ]
+    },
+    "src/inspect_robots/eval.py#1-60": {
+      "title": "Eval：把多个试次组织成一次评测",
+      "summary": "eval 模块负责场景与轮次循环、评分、汇总、日志和资源所有权。",
+      "inputs": "Task、Policy、Embodiment 与日志、评分、安全等选项。",
+      "returns": "每个任务的一份 EvalLog。当前片段只展示职责说明和导入。",
+      "example": "这里是实验管理层；真正逐小步执行的循环在 rollout.py，具体电机通信在机器人适配器。",
+      "code_sha256": "5ce3f82464d8fbd78ccd92dbf5497e06ea02a3e5bfcedd0dc3ac451df15345b9",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The ``eval()`` entry point — orchestrates scenes x epochs into an EvalLog.",
+          "text": "中文概括：遍历场景、重复运行、评分和合并分数，再把结果写成日志。不要把模块介绍当成已经调用了机器人。"
+        },
+        {
+          "line": 12,
+          "anchor": "import json",
+          "text": "标准库负责路径、时间、运行 ID、Git 信息查询和统计等；这些是记录与编排能力。"
+        },
+        {
+          "line": 27,
+          "anchor": "from inspect_robots import __version__",
+          "text": "引入兼容性、控制器、审批器和各类异常，用于正式执行前检查及错误归类。"
+        },
+        {
+          "line": 39,
+          "anchor": "from inspect_robots.frames import FrameStore, _safe",
+          "text": "FrameStore 管图片，Grader 捕获判断，EvalLog 等数据类管最终报告，rollout 管单次执行。"
+        },
+        {
+          "line": 56,
+          "anchor": "if TYPE_CHECKING:",
+          "text": "这组导入只供静态类型检查，避免运行时不必要的模块依赖。"
+        }
+      ]
+    },
+    "src/inspect_robots/log.py#1-60": {
+      "title": "日志的不可变性与配置来源",
+      "summary": "模块说明日志格式，清理可序列化的场景 metadata，并定义运行配置记录。",
+      "inputs": "运行与场景元信息。",
+      "returns": "可写 JSON 的记录结构；不能编码的 metadata 值会被跳过。",
+      "example": "文件里出现 Git 提交应先看它来自哪个工作区；框架包版本与实验代码版本可以是两回事。",
+      "code_sha256": "e23297efd4339b93bd08e3458f73f701a75b012c7e3b57d00242763fec85aef8",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"The immutable evaluation log — Inspect Robots's reproducible record of a run.",
+          "text": "EvalLog 是可复读的标准记录。schema version 表示文件结构，不是机器人固件版本。"
+        },
+        {
+          "line": 8,
+          "anchor": "Immutability is *shallow*: the dataclasses are frozen and sequence fields are",
+          "text": "“不可变”是浅层约束：外层数据类冻结、序列用 tuple，但里面的普通字典仍可能被改，所以日志仍须按只读证据管理。"
+        },
+        {
+          "line": 28,
+          "anchor": "def _json_safe_scene_metadata(metadata: Mapping[str, Any]) -> dict[str, Any]:",
+          "text": "对 metadata 每个值做 JSON 编码再解码，既复制数据，也验证能否序列化。失败的值被略过，不能认为任意 Python 对象都能完整存进日志。"
+        },
+        {
+          "line": 39,
+          "anchor": "SCHEMA_VERSION = 1",
+          "text": "SCHEMA_VERSION 给读取方一个结构版本标记。"
+        },
+        {
+          "line": 42,
+          "anchor": "@dataclass(frozen=True)",
+          "text": "EvalSpec 保存任务、策略、机器人、创建时间、版本、配置和种子。max_steps 是最终步数预算；max_seconds 的原始配置在后续字段保存。"
+        }
+      ]
+    },
+    "src/inspect_robots/grader.py#1-60": {
+      "title": "Grader 与 Scorer 为什么拆开",
+      "summary": "Grader 捕获一次判断，Scorer 只读取记录并计算分数，两者职责不同。",
+      "inputs": "运行完成的试次、场景标准，以及人或视觉模型的判断来源。",
+      "returns": "写入 TrialRecord 的判断和说明；无法判定时允许保持原记录。",
+      "example": "有无判断、判断来源以及得到的分数要分开记录，才能重新审查“任务到底成功了没有”。",
+      "code_sha256": "b3410cf0f47cbee981f2272c593e6c0921f3668a257c9927393401a46f9cfd3b",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "\"\"\"Judgement capture as a component: the capture side of R6 (plan 0049).",
+          "text": "判断发生在 rollout 返回之后、scorer 运行之前。它可能需要问人或调用视觉模型，不能每次重新算分时都重复做。"
+        },
+        {
+          "line": 18,
+          "anchor": "from inspect_robots._chatwire import HttpPost, chat_completion",
+          "text": "网络调用支持视觉判分；类型检查用到的 NumPy、场景和会话对象不代表所有判分方式都要使用图像或网络。"
+        },
+        {
+          "line": 30,
+          "anchor": "@runtime_checkable",
+          "text": "Grader 协议规定 name 和 grade 方法。只对需要评分的正常试次调用；出错或取消的试次不伪装成已评分。"
+        },
+        {
+          "line": 37,
+          "anchor": "It must tolerate being unable to grade (e.g. no judge available) by",
+          "text": "无法获取判断时应保留未判断状态，不应为了生成一个分数而编造结果。"
+        },
+        {
+          "line": 49,
+          "anchor": "class _OperatorGrader:",
+          "text": "_OperatorGrader 保存统一操作员会话。这里还没展示读取输入的部分，实际终端问答在 prompt_verdict 中。"
+        }
+      ]
+    },
+    "plans/0027-agent-on-demand-vision.md#1-90": {
+      "title": "按需看图为什么要区分前后时刻",
+      "summary": "设计文档讨论如何减少不必要图像输入，并让“移动后看图”的结果来自正确时刻。",
+      "inputs": "默认每次都附全部图片的成本，以及每回合只接受一个调用的约束。",
+      "returns": "按需取图工具、动作后排队取图与实际播放进度说明。",
+      "example": "给模型运动前的照片，却说这是“运动后结果”，会破坏闭环；因此排队照片必须来自下一份真实观测。",
+      "code_sha256": "d5d99899cc77174606d84b9085a95a88a2bb5fd26a30352df4e7bd7e9450031c",
+      "blocks": [
+        {
+          "line": 1,
+          "anchor": "# 0027 — Agent on-demand camera capture and chained tool calls",
+          "text": "这是功能设计文档，不会自行抓相机或控制机械臂。"
+        },
+        {
+          "line": 5,
+          "anchor": "## 1. Problem",
+          "text": "两个主要问题：每次附图增加输入量；移动后再单独申请看图又可能多花一轮模型往返。"
+        },
+        {
+          "line": 19,
+          "anchor": "Chaining a capture onto a motion is only useful if the frames come from the",
+          "text": "正确性比省调用更重要：动作后的照片必须来自控制器推进之后，不能重复使用动作前的旧图。"
+        },
+        {
+          "line": 26,
+          "anchor": "## 2. Scope",
+          "text": "方案限定只改变 agent 插件：允许一个运动后跟一个取图请求，并报告实际播放步数和目标残差，不允许一次串两段运动。"
+        },
+        {
+          "line": 49,
+          "anchor": "### 3a. `images` mode",
+          "text": "always 保持默认附图；on_demand 只给状态与可用相机名单，等模型要求时再展示图像。"
+        },
+        {
+          "line": 64,
+          "anchor": "`\"on_demand\"`: observation messages carry the state text plus one line naming",
+          "text": "名单必须来自这次实际收到的 observation.images，而不只是配置里声明的相机；相机掉帧不应一开始就算模型参数错误。"
+        },
+        {
+          "line": 73,
+          "anchor": "Every capture branch in the walk is gated on `images == \"on_demand\"`, not on",
+          "text": "执行分支也核对模式，不能仅靠给模型的 schema 假定它不会乱调工具。"
+        },
+        {
+          "line": 80,
+          "anchor": "### 3b. `take_pic`",
+          "text": "take_pic 的 cameras 可省略，note 必填。后面还会说明如何验证相机名及处理排队，此处是文档前段。"
+        }
+      ]
+    }
+  }
+}

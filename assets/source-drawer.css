@@ -1,0 +1,53 @@
+/* Generated into index.html by tools/embed_snippets.py. */
+.drawer { position: fixed; inset: 0 0 0 auto; width: min(820px, 96vw); background: var(--panel); color: var(--ink); border-left: 1px solid var(--rule); box-shadow: -12px 0 32px -16px rgba(0,0,0,.35); z-index: 50; display: flex; flex-direction: column; }
+.drawer[hidden] { display: none; }
+.drawer header { display: flex; align-items: flex-start; gap: 10px; padding: 16px 20px 12px; border-bottom: 1px solid var(--rule); }
+.drawer header .titles { flex: 1; min-width: 0; }
+.drawer header .name { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 14px; }
+.drawer header .where { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-2); overflow-wrap: anywhere; margin-top: 6px; }
+.drawer header .where a { border: 0; white-space: nowrap; }
+.drawer button { background: var(--bg-2); border: 1px solid var(--rule); color: var(--ink); border-radius: 5px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.drawer button:hover { border-color: var(--model); }
+.drawer button:focus-visible, .drawer a:focus-visible { outline: 2px solid var(--model); outline-offset: 3px; }
+.drawer .modes { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--rule); }
+.drawer .modes button[aria-pressed="true"] { color: var(--model); background: var(--model-soft); border-color: var(--model); }
+.drawer .note-count { margin-left: auto; font-size: 12px; color: var(--ink-2); }
+.drawer .drawer-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.drawer .guide { padding: 20px; border-bottom: 1px solid var(--rule); }
+.drawer .guide h2 { font-size: 21px; margin: 0 0 8px; line-height: 1.5; }
+.drawer .guide p { font-size: 14px; line-height: 1.8; margin: 0 0 12px; }
+.drawer .guide dl { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 6px 12px; margin: 0; font-size: 13px; }
+.drawer .guide dt { color: var(--ink-2); }
+.drawer .guide dd { margin: 0; overflow-wrap: anywhere; }
+.drawer .guide .example { margin: 14px 0 0; padding: 10px 12px; background: var(--robot-soft); border-left: 3px solid var(--robot); font-size: 13px; }
+.drawer .code { overflow-x: auto; background: var(--code-bg); color: var(--code-ink); font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.65; padding: 10px 0 24px; }
+.drawer .code table { border-collapse: collapse; width: 100%; min-width: 0; table-layout: fixed; font-size: inherit; line-height: inherit; }
+.drawer .code col:first-child { width: 56px; }
+.drawer .code td { padding: 1px 16px 1px 0; border: 0; vertical-align: top; white-space: pre-wrap; overflow-wrap: anywhere; }
+.drawer .code td.ln { text-align: right; color: #92A29A; user-select: none; padding: 1px 12px 1px 8px; white-space: nowrap; }
+.drawer .code .c { color: #9CAEA3; font-style: italic; }
+.drawer .code .s { color: #B7D58E; }
+.drawer .code .k { color: #A9C6FF; }
+.drawer .code .n { color: #F0BD92; }
+.drawer .code .cn-note td { white-space: normal; color: var(--ink); background: var(--panel); border-top: 10px solid var(--code-bg); border-bottom: 10px solid var(--code-bg); font-family: "Noto Sans SC", system-ui, sans-serif; }
+.drawer .code .cn-note .note-symbol { color: var(--model); text-align: right; padding: 12px 12px 12px 8px; font-family: "JetBrains Mono", monospace; }
+.drawer .code .cn-note .note-text { padding: 10px 18px 10px 0; font-size: 13px; line-height: 1.8; }
+.drawer .code .note-label { display: block; color: var(--model); font-size: 11px; margin-bottom: 2px; letter-spacing: .02em; }
+.drawer[data-mode="raw"] .code table { table-layout: auto; width: auto; min-width: 100%; }
+.drawer[data-mode="raw"] .code td { white-space: pre; overflow-wrap: normal; }
+.drawer .hint { font-size: 11px; line-height: 1.6; color: var(--ink-2); padding: 10px 20px; border-top: 1px solid var(--rule); }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 40; }
+.scrim[hidden] { display: none; }
+a.src[data-snip] { cursor: pointer; white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
+a.src[data-snip]::after { content: " ▸ 中文注释"; font: 11px "Noto Sans SC", system-ui, sans-serif; }
+@media (max-width: 600px) {
+ .drawer { width: 100vw; }
+ .drawer header, .drawer .modes { padding-left: 14px; padding-right: 14px; }
+ .drawer .guide { padding: 16px 14px; }
+ .drawer .guide h2 { font-size: 19px; }
+ .drawer .guide dl { grid-template-columns: 76px minmax(0,1fr); gap: 6px 8px; }
+ .drawer .code { font-size: 11px; }
+ .drawer .code col:first-child { width: 44px; }
+ .drawer .note-count { font-size: 11px; }
+ .drawer .hint { padding: 8px 14px; }
+}

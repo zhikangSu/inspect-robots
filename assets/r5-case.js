@@ -47,16 +47,16 @@
     const kind = c.op === 'done' ? '结束 · done' : c.op === 'hold' ? '保持并更新观测' :
       Object.keys(c.targets).every(k => k.endsWith('_gripper')) ? '改变夹爪开度' : '移动到关节目标';
     text('r5-command-kind', kind);
-    text('r5-chunk', c.op === 'done' ? '终止记录，不执行运动' : `${reply.steps} 小步 · ${reply.seconds.toFixed(2)} s`);
+    text('r5-chunk', c.op === 'done' ? '1 个结束保持步' : `${reply.steps} 小步 · ${reply.seconds.toFixed(2)} s`);
     const residual = o.last_commanded ? Math.max(...Object.keys(o.state)
       .filter(k => !k.endsWith('_gripper')).map(k => Math.abs(o.state[k] - o.last_commanded[k]))) : null;
     text('r5-residual', residual === null ? '初始观测，无上一条目标' : `${residual.toFixed(3)} rad（最大值）`);
     text('r5-after-summary', next ? `这条指令之后是观察 ${next.seq}：${next.title}。折算秒数来自配置的 20 Hz，不含策略等待，也不保证现场每步正好 50 ms。` :
-      '这是末次策略观测。随后 done 请求结束，控制进程正常退出；页面下方还有 SDK 释放后另拍的最终照片。');
+      '这是末次策略观测。随后 done 仍执行一次保持目标的 step，再结束并正常退出；页面下方还有 SDK 释放后另拍的最终照片。');
     $('r5-after').disabled = !next;
     text('r5-after', next ? `看执行后的观察 ${next.seq} →` : '已到末次策略观测');
     text('r5-command-record', `command #${c.id}\n${c.note}\n\n` +
-      (c.targets ? JSON.stringify(c.targets, null, 2) : c.op === 'hold' ? '保持上一条完整目标，获取新的观测。' : 'done：请求终止，不发送新的运动目标。'));
+      (c.targets ? JSON.stringify(c.targets, null, 2) : c.op === 'hold' ? '保持上一条完整目标，获取新的观测。' : 'done：保留原目标执行一次 step，再按 request_stop 结束循环。'));
     const rows = $('r5-state-rows');
     rows.replaceChildren();
     for (const key of Object.keys(o.state)) {
@@ -148,7 +148,7 @@
   };
   window.addEventListener('hashchange', hashChanged);
 
-  fetch(base + 'data.json').then(response => {
+  fetch(base + 'data.json', {cache: 'no-cache'}).then(response => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
   }).then(payload => {

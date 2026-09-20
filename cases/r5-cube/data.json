@@ -5236,7 +5236,7 @@
     "move_commands": 36,
     "hold_commands": 4,
     "stop_commands": 1,
-    "executed_steps": 1553,
+    "executed_steps": 1554,
     "framework_total_steps": 1554,
     "wall_duration_s": 831.5984001809265,
     "replay_fps": 20,
@@ -5244,7 +5244,10 @@
     "declared_control_hz": 20,
     "rejected_commands": 0,
     "guardrail_interventions": 0,
-    "startup_checks_ended_before_motion": 2
+    "startup_checks_ended_before_motion": 2,
+    "steps_before_stop": 1553,
+    "stop_hold_steps": 1,
+    "step_count_note": "1553 个普通控制步后，done 仍经过一次保持目标的 step，再结束循环；共 1554 次实际 step。"
   },
   "provenance": {
     "framework_git_commit": "bb6495fe24432485246a108be0858d2f46e3475e",

@@ -10,13 +10,16 @@ embedded in the JSON at the bottom of the page. Safe to re-run after editing.
 from __future__ import annotations
 
 import html
+import hashlib
+from pathlib import Path
 import json
 import re
 import subprocess
 import sys
 
 import os
-REPO = os.environ.get("INSPECT_ROBOTS_REPO", "/Users/meow/work/HarnessVLA/inspect-robots")
+SITE = Path(__file__).resolve().parents[1]
+REPO = os.environ.get("INSPECT_ROBOTS_REPO", str(SITE))
 SHA = "7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9"
 PAGE = sys.argv[1]
 BASE = f"https://github.com/robocurve/inspect-robots/blob/{SHA}/"
@@ -76,7 +79,29 @@ def snippet_for(path: str, frag: str | None) -> dict | None:
     lines = file_lines(path)
     if lines is None:
         return None
-    if frag:
+    if frag and not frag.startswith("L") and path.endswith(".md"):
+        # Honor a Markdown section link instead of silently showing the file intro.
+        for index, line in enumerate(lines):
+            heading = re.match(r"^(#{1,6}) (.+)$", line)
+            if not heading:
+                continue
+            slug = re.sub(r"[^\w\- ]", "", heading[2].lower()).replace(" ", "-")
+            if slug != frag:
+                continue
+            start = index + 1
+            level = len(heading[1])
+            end = len(lines)
+            for following in range(index + 1, len(lines)):
+                h = re.match(r"^(#{1,6}) ", lines[following])
+                if h and len(h[1]) <= level:
+                    end = following
+                    break
+            while end > start and not lines[end - 1].strip():
+                end -= 1
+            break
+        else:
+            raise ValueError(f"Markdown heading not found: {path}#{frag}")
+    elif frag:
         m = re.match(r"L(\d+)(?:-L(\d+))?$", frag)
         if not m:
             return None
@@ -92,160 +117,96 @@ def snippet_for(path: str, frag: str | None) -> dict | None:
     return {"path": path, "start": start, "end": end, "code": code}
 
 
-page = open(PAGE, encoding="utf-8").read()
-snips: dict[str, dict] = {}
-counter = 0
-
-
-def replace_anchor(m: re.Match[str]) -> str:
-    global counter
-    attrs, href = m.group(1), m.group(2)
-    rest = href[len(BASE):]
-    if "/tree/" in href or not rest:
-        return m.group(0)
-    path, _, frag = rest.partition("#")
-    if frag and not frag.startswith("L"):
-        frag = None  # markdown heading anchor
-    snip = snippet_for(path, frag or None)
-    if snip is None:
-        return m.group(0)
-    key = f"{path}#{snip['start']}-{snip['end']}"
-    if key not in snips:
-        counter += 1
-        snip["id"] = f"s{counter}"
-        snip["href"] = href
-        snips[key] = snip
-    sid = snips[key]["id"]
-    if 'data-snip=' in attrs:
-        return m.group(0)
-    return f'<a{attrs} data-snip="{sid}" href="{href}"'
-
-
-page = re.sub(r'<a([^>]*class="src"[^>]*?) href="(' + re.escape(BASE) + r'[^"]*)"', replace_anchor, page)
-page = re.sub(r'<a([^>]*?) href="(' + re.escape(BASE) + r'[^"]*)"([^>]*class="src"[^>]*)>',
-              lambda m: replace_anchor(re.match(r'<a([^>]*class="src"[^>]*?) href="([^"]*)"', f'<a{m.group(1)}{m.group(3)} href="{m.group(2)}"')) + ">" if False else m.group(0), page)
-
-data = {v["id"]: {k: v[k] for k in ("path", "start", "end", "code", "href")} for v in snips.values()}
-payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
-
-drawer_css = """
-  /* ---- source drawer ---- */
-  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 92vw); background: var(--panel); border-left: 1px solid var(--rule); box-shadow: -12px 0 32px -16px rgba(0,0,0,.35); transform: translateX(105%); transition: transform .2s ease; z-index: 50; display: flex; flex-direction: column; }
-  .drawer[data-open="true"] { transform: none; }
-  @media (prefers-reduced-motion: reduce) { .drawer { transition: none; } }
-  .drawer header { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px 10px; border-bottom: 1px solid var(--rule); }
-  .drawer header .titles { flex: 1; min-width: 0; }
-  .drawer header .name { font-family: "Familjen Grotesk", "Noto Sans SC", sans-serif; font-weight: 700; font-size: 15px; }
-  .drawer header .where { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-3); word-break: break-all; margin-top: 2px; }
-  .drawer header .where a { border: 0; }
-  .drawer header button { background: var(--bg-2); border: 1px solid var(--rule); color: var(--ink); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
-  .drawer header button:hover { border-color: var(--ink-3); }
-  .drawer .code { flex: 1; overflow: auto; background: var(--code-bg); color: var(--code-ink); font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.55; padding: 12px 0 24px; }
-  .drawer .code table { border-collapse: collapse; min-width: 100%; }
-  .drawer .code td { padding: 0 14px 0 0; border: 0; vertical-align: top; white-space: pre; }
-  .drawer .code td.ln { text-align: right; color: var(--code-cm); user-select: none; padding: 0 12px 0 14px; width: 1%; }
-  .drawer .code .c { color: var(--code-cm); font-style: italic; }
-  .drawer .code .s { color: var(--code-str); }
-  .drawer .code .k { color: var(--code-kw); }
-  .drawer .hint { font-size: 12.5px; color: var(--ink-3); padding: 8px 16px; border-top: 1px solid var(--rule); }
-  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 40; }
-  .scrim[hidden] { display: none; }
-  a.src[data-snip] { cursor: pointer; }
-  a.src[data-snip]::after { content: " ▸"; font-size: 10px; }
-"""
-
-drawer_html = """
-<div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" data-open="false" aria-label="源码片段">
-  <header>
-    <div class="titles"><div class="name" id="dname"></div><div class="where" id="dwhere"></div></div>
-    <button type="button" id="dclose">关闭</button>
-  </header>
-  <div class="code" id="dcode"></div>
-  <div class="hint">片段固定在上游提交 7e4d1b7。按 Esc 关闭；右上角可在 GitHub 打开完整文件。</div>
-</aside>
-<script id="snips" type="application/json">__PAYLOAD__</script>
-<script>
-(function () {
-  var data = JSON.parse(document.getElementById('snips').textContent);
-  var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
-  var dname = document.getElementById('dname'), dwhere = document.getElementById('dwhere'), dcode = document.getElementById('dcode');
-  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-  var KW = /\\b(def|class|return|if|elif|else|for|while|try|except|finally|with|as|import|from|raise|yield|lambda|and|or|not|in|is|None|True|False|pass|continue|break|assert|del|global|nonlocal|async|await)\\b/g;
-  function hl(line, st) {
-    // st.tq: inside a triple-quoted string; simple line-based highlighter, good enough for display
-    var out = '', i = 0;
-    if (st.tq) {
-      var close = line.indexOf(st.tq);
-      if (close < 0) { return { html: '<span class="s">' + esc(line) + '</span>', st: st }; }
-      out += '<span class="s">' + esc(line.slice(0, close + 3)) + '</span>'; i = close + 3; st = { tq: null };
-    }
-    var rest = line.slice(i);
-    var tqm = rest.match(/(\"\"\"|''')/);
-    var hashAt = rest.indexOf('#');
-    if (tqm && (hashAt < 0 || tqm.index < hashAt)) {
-      var open = tqm.index, q = tqm[1];
-      var after = rest.slice(open + 3), closeAt = after.indexOf(q);
-      out += code(rest.slice(0, open));
-      if (closeAt < 0) { out += '<span class="s">' + esc(rest.slice(open)) + '</span>'; return { html: out, st: { tq: q } }; }
-      out += '<span class="s">' + esc(rest.slice(open, open + 3 + closeAt + 3)) + '</span>';
-      var r2 = hl(rest.slice(open + 3 + closeAt + 3), { tq: null });
-      return { html: out + r2.html, st: r2.st };
-    }
-    if (hashAt >= 0) { out += code(rest.slice(0, hashAt)) + '<span class="c">' + esc(rest.slice(hashAt)) + '</span>'; return { html: out, st: st }; }
-    return { html: out + code(rest), st: st };
-  }
-  function code(s) {
-    // strings then keywords
-    var parts = s.split(/("(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*')/);
-    return parts.map(function (p, idx) {
-      if (idx % 2 === 1) return '<span class="s">' + esc(p) + '</span>';
-      return esc(p).replace(KW, '<span class="k">$1</span>');
-    }).join('');
-  }
-  function render(id) {
-    var s = data[id]; if (!s) return;
-    var isPy = /\\.py$/.test(s.path);
-    dname.textContent = s.path.split('/').pop() + '  ·  L' + s.start + (s.end > s.start ? '–L' + s.end : '');
-    dwhere.innerHTML = esc(s.path) + '  <a href="' + s.href + '" target="_blank" rel="noopener">在 GitHub 打开 ↗</a>';
-    var rows = [], st = { tq: null }, lines = s.code.split('\\n');
-    for (var i = 0; i < lines.length; i++) {
-      var h = isPy ? hl(lines[i], st) : { html: esc(lines[i]), st: st }; st = h.st;
-      rows.push('<tr><td class="ln">' + (s.start + i) + '</td><td>' + (h.html || ' ') + '</td></tr>');
-    }
-    dcode.innerHTML = '<table>' + rows.join('') + '</table>';
-    dcode.scrollTop = 0;
-    drawer.dataset.open = 'true'; scrim.hidden = false;
-  }
-  function close() { drawer.dataset.open = 'false'; scrim.hidden = true; }
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('a.src[data-snip]');
-    if (!a) return;
-    if (e.metaKey || e.ctrlKey || e.shiftKey) return; // let modifier-clicks open GitHub
-    e.preventDefault(); render(a.dataset.snip);
-  });
-  document.getElementById('dclose').addEventListener('click', close);
-  scrim.addEventListener('click', close);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
-})();
-</script>
-"""
-
-# Idempotent: strip a previous drawer (CSS block and HTML tail) before re-adding.
-page = re.sub(r"\n  /\* ---- source drawer ---- \*/.*?(?=\n</style>)", "", page, count=1, flags=re.S)
-tail = ""
+page = Path(PAGE).read_text(encoding="utf-8")
+# Parse only authored HTML. Embedded snippets can themselves contain HTML examples.
 if "<!-- source drawer -->" in page:
     before, _, after = page.partition("<!-- source drawer -->")
     end = after.find("</script>\n", after.find("<script>"))
-    tail = after[end + len("</script>\n"):] if end >= 0 else ""
+    if end < 0:
+        raise ValueError("Cannot locate the previous generated drawer script")
+    tail = after[end + len("</script>\n"):]
     page = before.rstrip() + "\n"
-elif "</body>" in page:
-    page, _, tail = page.rpartition("</body>")
-    tail = "</body>" + tail
-    page = page.rstrip() + "\n"
-page = page.replace("</style>", drawer_css + "</style>", 1)
-page = page + "<!-- source drawer -->" + drawer_html.replace("__PAYLOAD__", payload) + tail
-open(PAGE, "w", encoding="utf-8").write(page)
-print(len(snips), "snippets;", sum(v["end"] - v["start"] + 1 for v in snips.values()), "lines;", len(payload) // 1024, "KB")
-for v in sorted(snips.values(), key=lambda x: x["id"]):
-    print(f"  {v['id']:>4} {v['path'].split('/')[-1]}:{v['start']}-{v['end']}")
+else:
+    page, closing, tail = page.rpartition("</body>")
+    tail = closing + tail
+page = re.sub(r"\n  /\* ---- source drawer ---- \*/.*?(?=\n</style>)", "", page, count=1, flags=re.S)
+
+annotations = json.loads((SITE / "annotations/source.zh-CN.json").read_text())
+if annotations["source_commit"] != SHA:
+    raise ValueError("Chinese notes must target the same pinned commit as the snippets")
+notes = annotations["snippets"]
+snips = {}
+
+
+def replace_anchor(match):
+    tag = match[0]
+    classes = re.search(r'class="([^"]*)"', tag)
+    href_match = re.search(r'href="([^"]*)"', tag)
+    if not classes or "src" not in classes[1].split() or not href_match:
+        return tag
+    href = html.unescape(href_match[1])
+    if not href.startswith(BASE):
+        return tag
+    path, _, fragment = href[len(BASE):].partition("#")
+    snippet = snippet_for(path, fragment or None)
+    if snippet is None:
+        kind = subprocess.run(["git", "-C", REPO, "cat-file", "-t", f"{SHA}:{path}"],
+                              capture_output=True, text=True)
+        if kind.returncode == 0 and kind.stdout.strip() == "tree":
+            return tag.replace("/blob/", "/tree/", 1)
+        raise ValueError(f"Pinned source unavailable: {href}. Set INSPECT_ROBOTS_REPO to a clone containing {SHA}.")
+    key = f"{path}#{snippet['start']}-{snippet['end']}"
+    if key not in snips:
+        if key not in notes:
+            raise ValueError(f"Missing Chinese explanation for {key}")
+        annotation = notes[key]
+        if annotation["code_sha256"] != hashlib.sha256(snippet["code"].encode()).hexdigest():
+            raise ValueError(f"Source changed; review Chinese notes for {key}")
+        for field in ("title", "summary", "inputs", "returns", "example"):
+            if not annotation.get(field):
+                raise ValueError(f"Empty {field} explanation for {key}")
+        lines = snippet["code"].splitlines()
+        seen = set()
+        if not annotation["blocks"]:
+            raise ValueError(f"No inline Chinese notes for {key}")
+        for block in annotation["blocks"]:
+            line = block["line"]
+            if line in seen or not snippet["start"] <= line <= snippet["end"]:
+                raise ValueError(f"Invalid annotation line {line} in {key}")
+            if lines[line - snippet["start"]].strip() != block["anchor"]:
+                raise ValueError(f"Annotation anchor mismatch: {key} at L{line}")
+            seen.add(line)
+        snippet.update(id=f"s{len(snips) + 1}", href=href, annotation=annotation)
+        snips[key] = snippet
+    tag = re.sub(r'\sdata-snip="[^"]*"', '', tag)
+    return tag[:-1] + f' data-snip="{snips[key]["id"]}">'
+
+
+page = re.sub(r"<a\b[^>]*>", replace_anchor, page)
+if not snips:
+    raise ValueError("No pinned code links found; refusing to publish an empty drawer")
+data = {s["id"]: {k: v for k, v in s.items() if k != "id"} for s in snips.values()}
+payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+css = (SITE / "assets/source-drawer.css").read_text()
+js = (SITE / "assets/source-drawer.js").read_text()
+page = re.sub(r"\s*</style>", lambda _: "\n  /* ---- source drawer ---- */\n" + css + "\n</style>", page, count=1)
+drawer = """
+<!-- source drawer -->
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" data-open="false" data-mode="annotated" role="dialog" aria-modal="true" aria-labelledby="dname" hidden>
+  <header><div class="titles"><div class="name" id="dname"></div><div class="where" id="dwhere"></div></div><button type="button" id="dclose">关闭</button></header>
+  <div class="modes" role="group" aria-label="源码显示方式"><button type="button" id="dannotated" aria-pressed="true">中文注释</button><button type="button" id="draw" aria-pressed="false">原始代码</button><span class="note-count" id="dnote-count"></span></div>
+  <div class="drawer-body" id="drawer-body">
+    <section class="guide" id="dguide"><h2 id="dguide-title"></h2><p id="dsummary"></p><dl><dt id="dinputs-label">输入 / 依赖</dt><dd id="dinputs"></dd><dt id="dreturns-label">产出 / 作用</dt><dd id="dreturns"></dd></dl><p class="example" id="dexample"></p></section>
+    <div class="code" id="dcode"></div>
+  </div>
+  <div class="hint">中文解读由本站补充，# 行不属于上游源码。原代码与行号保持不变，固定于提交 7e4d1b7；片段可能不含完整函数。按 Esc 关闭。</div>
+</aside>
+<script id="snips" type="application/json">__PAYLOAD__</script>
+<script>
+__SCRIPT__
+</script>
+"""
+page = page.rstrip() + "\n" + drawer.replace("__PAYLOAD__", payload).replace("__SCRIPT__", js) + tail
+Path(PAGE).write_text(page, encoding="utf-8")
+print(f"{len(snips)} snippets; {sum(len(s['annotation']['blocks']) for s in snips.values())} Chinese block notes; {len(payload.encode()) // 1024} KB embedded data")
