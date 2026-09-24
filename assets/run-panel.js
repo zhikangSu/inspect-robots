@@ -117,7 +117,7 @@
     ['Put the wooden cube into the blue plate. When finished, return the arm to its starting folded pose and close the gripper, then call done.',
       '把木块放进蓝色盘子。做完后，把机械臂收回到开始时的折叠姿态、合上夹爪，然后调用 done。'],
   ]);
-  const TOOL_ZH = { move_joints: '移动关节', done: '宣布完成', give_up: '宣布放弃', take_pic: '拍照', move_eef: '移动末端', move_by: '按位移移动' };
+  const TOOL_ZH = { move_ee: '移动末端', move_relative: '末端相对移动', plan_ee: '只计算逆解', measure_pixel: '像素与桌面测量', observe: '只刷新观测', verify_grasp: '看图验握', mark_placement: '记录入盘验证', move_joints: '移动关节', done: '宣布完成', give_up: '宣布放弃', take_pic: '拍照', move_eef: '移动末端', move_by: '按位移移动' };
   const PARAM_ZH = { summary: '一句话总结', reason: '放弃的原因', targets: '目标值', note: '说明', hindsight: '希望早知道的事', cameras: '要拍的相机' };
   function zhInstruction(text) { return INSTRUCTIONS.get(text) || null; }
   function zh(sentence) {
@@ -148,6 +148,7 @@
   const isGripper = name => /gripper/.test(name);
   const usageOf = c => {
     const u = c.response.usage || {};
+    if (u.input_tokens == null && u.prompt_tokens == null && u.output_tokens == null && u.completion_tokens == null) return {read: null, write: null, fresh: null, input: null, output: null};
     const read = u.cache_read_input_tokens || 0, write = u.cache_creation_input_tokens || 0;
     const fresh = u.input_tokens != null ? u.input_tokens : u.prompt_tokens || 0;
     return { read, write, fresh, input: read + write + fresh, output: u.output_tokens != null ? u.output_tokens : u.completion_tokens || 0 };
@@ -155,6 +156,7 @@
   function resultKind(text) {
     if (!text) return 'none';
     if (/^executing /.test(text)) return 'ok';
+    if (/^(\{|visual grasp judgement recorded|A placement recorded\.)/.test(text)) return 'ok';
     if (/^(done|give_up): /.test(text)) return 'end';
     if (/^ignored: /.test(text)) return 'ignored';
     return 'error';
@@ -210,17 +212,21 @@
   // ---------- header: which run this is ----------
   function renderRunCard() {
     const m = run.meta, pc = m.policy_config || {};
+    const physical = m.physical_result;
     const calls = run.turns.reduce((a, t) => a + t.calls.length, 0);
-    const verdict = m.judgement ? (/^(success|y|yes|pass)/i.test(m.judgement) ? '成功' : /^partial/i.test(m.judgement) ? '部分成功' : '失败') : '未判断';
+    const verdict = physical ? (physical.A_success === true ? '入盘成功' : physical.A_success === false ? '入盘失败' : '待视觉复核') : m.judgement ? (/^(success|y|yes|pass)/i.test(m.judgement) ? '成功' : /^partial/i.test(m.judgement) ? '部分成功' : '失败') : '未判断';
     fill('run-card',
       h('div', { class: 'rc-title' }, '右边的内容都来自这一次运行'),
       h('dl', { class: 'rc-grid' },
         h('div', null, h('dt', null, '日期'), h('dd', null, (m.created || '').slice(0, 10))),
         h('div', null, h('dt', null, '机器人'), h('dd', null, m.embodiment, m.is_simulated ? '（仿真）' : '（真机）')),
         h('div', null, h('dt', null, '模型'), h('dd', null, pc.model || '—')),
-        h('div', null, h('dt', null, '结果'), h('dd', null, `${verdict}（${m.judgement_source === 'vlm' ? '看图模型判断' : '操作员判断'}）`))),
+        h('div', null, h('dt', null, '结果'), h('dd', null, `${verdict}（${physical ? '独立图像复核' : m.judgement_source === 'vlm' ? '看图模型判断' : '操作员判断'}）`))),
       h('p', { class: 'rc-task' }, '任务：', h('span', { lang: 'en' }, m.instruction), zhLine(zhInstruction(m.instruction))),
-      h('p', { class: 'rc-stats' }, `共 ${run.turns.length} 个回合 · 调用模型 ${calls} 次 · 机器人执行 ${int(m.total_steps)} 小步 · 用时 ${secs(m.duration_s || 0)}`),
+      physical ? h('p', { class: 'ev-note' }, `本次只做入盘。入盘任务 ${secs(physical.A_elapsed_s || 0)}；API回程 ${secs(physical.restore_elapsed_s || 0)}；后续接管恢复（含等待）${secs(physical.admin_recovery_elapsed_to_home_s || 0)}。`) : null,
+      physical ? h('p', { class: 'ev-note' }, '入盘由 API 独立完成；回零中因 HTTP 413 中止，由 Codex 经同一控制进程显式恢复。不是全程无接管完成。') : null,
+      physical ? h('p', { class: 'ev-note' }, `入盘 API ${physical.phase_stats.A.http_attempts} 次，按公开单价估算 $${num(physical.phase_stats.A.cost_usd, 4)}；回程已返回用量估算 $${num((physical.phase_stats.RESTORE || {}).reported_cost_usd, 4)}，另有失败请求未返回用量。准备调用另记。`) : null,
+      h('p', { class: 'rc-stats' }, `共 ${run.turns.length} 个回合 · ${calls} 次逻辑请求 · 框架推进 ${int(m.total_steps)} 小步（含只观察／停止） · 框架用时 ${secs(m.duration_s || 0)}`),
       h('p', { class: 'rc-files' }, '原始记录：',
         h('a', { href: BASE + 'eval-log.json', download: '' }, '完整日志'), ' · ',
         h('a', { href: BASE + 'wire.json', download: '' }, '全部请求和回复'), ' · ',
@@ -517,7 +523,7 @@
     v.addEventListener('loadedmetadata', seek, { once: true });
     v.addEventListener('timeupdate', () => { if (stopAt != null && v.currentTime >= stopAt) { v.pause(); stopAt = null; } });
     const play = () => { seek(); stopAt = t.steps[1] / hz; v.play().catch(() => {}); };
-    return h('div', { class: 'ev-video-wrap' }, label('回放这一段', `第 ${t.steps[0]}–${t.steps[1]} 小步`), v,
+    return h('div', { class: 'ev-video-wrap' }, label('回放这一段', `第 ${t.steps[0]}–${t.steps[1]} 小步；仅动作采样帧，API等待不在视频中`), v,
       h('div', { class: 'ev-actions' }, h('button', { type: 'button', onclick: play }, '播放这一段'),
         cams.length > 1 ? cams.map(cam => h('button', { type: 'button', onclick: () => { const time = v.currentTime; v.src = BASE + run.videos[cam]; v.addEventListener('loadedmetadata', () => { v.currentTime = time; }, { once: true }); } }, `相机 ${cam}`)) : null));
   }
@@ -571,10 +577,12 @@
 
   function renderS11() {
     const m = run.meta;
+    const physical = m.physical_result;
     fill('ev-s11', kv([
       ['结束原因', code(m.termination || '—'), m.termination === 'done' ? '（模型调用了 done）' : ''],
-      ['谁来判断', m.judgement_source === 'vlm' ? '看图模型' : '操作员（在终端里回答）'],
-      ['判断结果', code(m.judgement || '—')],
+      ['谁来判断', physical ? 'Codex 协调者独立查看实际图片；API 模型声明另记' : m.judgement_source === 'vlm' ? '看图模型' : '操作员（在终端里回答）'],
+      ['判断结果', code(physical ? (physical.A_success === true ? '入盘成功' : physical.A_success === false ? '入盘失败' : '待复核') : m.judgement || '—')],
+      physical ? ['复核证据与说明', pre(physical.independent_visual_review)] : null,
       m.judgement_note ? ['备注', h('span', { lang: 'en' }, m.judgement_note)] : null,
       ['打分', Object.entries(m.metrics || {}).map(([k, v]) => h('span', { class: 'chip-kv' }, code(k), ` = ${v}`))],
       ['框架状态', code(m.status || '—'), '（只说明程序正常跑完，和任务成不成功无关）'],
@@ -585,6 +593,7 @@
     const u = run.meta.llm_usage || {};
     const size = b => (b > 1e6 ? `${num(b / 1e6, 1)} MB` : b > 1e3 ? `${num(b / 1e3, 0)} KB` : `${b} B`);
     fill('ev-s12',
+      run.meta.physical_result ? fold('本次实验统计：入盘、回零、API用量与费用分开', pre(run.meta.physical_result), h('a', {href: BASE + 'events.jsonl', download: ''}, '原始事件、SDK目标与读回'), ' · ', h('a', {href: BASE + 'api_requests.csv', download: ''}, '逐请求CSV'), ' · ', h('a', {href: BASE + 'README.md'}, '记录口径与自定义工具说明')) : null,
       label('这次运行的日志目录'),
       h('ul', { class: 'files' }, (run.files || []).map(f => h('li', null, code(f.path), h('span', { class: 'muted' }, f.count ? ` ${f.count} 个文件，共 ${size(f.size)}` : ` ${size(f.size)}`), h('span', { class: 'zh' }, fileNote(f.path))))),
       kv([

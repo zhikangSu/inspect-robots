@@ -1,0 +1,448 @@
+{
+  "schema": 1,
+  "model": "claude-opus-5-5",
+  "task": "tabletop cube into blue plate only",
+  "fake": false,
+  "B": "not part of this experiment",
+  "model_claimed_placement": true,
+  "independent_visual_review": {
+    "utc": "2026-09-24T10:12:21.210250+00:00",
+    "monotonic_ns": 1836539452470573,
+    "reviewer": "Codex coordinator independent visual review",
+    "A_success": true,
+    "attempts": 1,
+    "first_attempt_success": true,
+    "task_human_intervention": false,
+    "task_coordinator_control_intervention": false,
+    "regrasp_count": 0,
+    "unintended_drops": 0,
+    "finding": "After open-gripper release and upward withdrawal, cube is upright and fully inside the blue plate in both fixed and wrist images at observations 21 and 22. Its location remains unchanged across these observations.",
+    "evidence": [
+      "observations/000021_fixed.png",
+      "observations/000021_wrist.png",
+      "observations/000022_fixed.png",
+      "observations/000022_wrist.png"
+    ],
+    "stability_interval_s": 19.26981507,
+    "grasp_evidence": [
+      "observations/000015_fixed.png",
+      "observations/000015_wrist.png"
+    ],
+    "restoration_review": {
+      "success": true,
+      "actor": "Codex coordinator via same SDK owner",
+      "API_autonomous_restoration_complete": false,
+      "reason": "API write timeout retried, then HTTP413 request too large at observation24; explicit final fold and empty-gripper closure authorized by user",
+      "final_joint_state": [
+        -0.00171661376953125,
+        0.00438690185546875,
+        0.02155303955078125,
+        0.042916297912597656,
+        0.00019073486328125,
+        -0.00400543212890625,
+        0.00091552734375
+      ],
+      "fold_tolerance_rad": 0.1,
+      "evidence": [
+        "observations/000026_fixed.png",
+        "observations/000026_wrist.png",
+        "observations/000027_fixed.png",
+        "observations/000027_wrist.png"
+      ],
+      "human_physical_intervention": false,
+      "coordinator_control_intervention": true,
+      "final_home_monotonic_ns": 1837206492313586,
+      "final_home_utc": "2026-09-24T10:23:28.250113+00:00"
+    }
+  },
+  "A_success": true,
+  "A_elapsed_s": 882.088257597,
+  "restore_elapsed_s": 238.4783403,
+  "restore_time_note": "restore_elapsed_s is API restoration until framework end; explicit coordinator recovery is separate.",
+  "admin_recovery_elapsed_to_home_s": 448.752121167,
+  "total_to_verified_home_s": 1569.318719064,
+  "total_to_framework_end_s": 1120.566597897,
+  "pre_goal_initialization_s": 25.631843408,
+  "sdk_release_utc": "2026-09-24T10:25:19.381658+00:00",
+  "grasp_attempts": 1,
+  "successful_grasp_claims": 1,
+  "phase_stats": {
+    "A": {
+      "http_attempts": 29,
+      "logical_requests": 29,
+      "http_200_completions": 29,
+      "failed_http_attempts": 0,
+      "retry_attempts": 0,
+      "uncompleted_requests": 0,
+      "observations": 21,
+      "tool_calls": 30,
+      "motion_commands": 19,
+      "sdk_control_steps": 1004,
+      "sdk_readbacks": 1004,
+      "responses_with_usage": 29,
+      "responses_missing_usage": 0,
+      "reported_cost_usd": 0.4741934,
+      "input_uncached": 100,
+      "cache_write": 43544,
+      "cache_read": 637367,
+      "input_total": 681011,
+      "output": 6430,
+      "thinking": 1925,
+      "tokens_total": 687441,
+      "cost_usd": 0.4741934
+    },
+    "ADMIN_RECOVERY": {
+      "http_attempts": 0,
+      "logical_requests": 0,
+      "http_200_completions": 0,
+      "failed_http_attempts": 0,
+      "retry_attempts": 0,
+      "uncompleted_requests": 0,
+      "observations": 3,
+      "tool_calls": 0,
+      "motion_commands": 2,
+      "sdk_control_steps": 214,
+      "sdk_readbacks": 214,
+      "responses_with_usage": 0,
+      "responses_missing_usage": 0,
+      "reported_cost_usd": null,
+      "input_uncached": null,
+      "cache_write": null,
+      "cache_read": null,
+      "input_total": null,
+      "output": null,
+      "thinking": null,
+      "tokens_total": null,
+      "cost_usd": null
+    },
+    "INIT": {
+      "http_attempts": 0,
+      "logical_requests": 0,
+      "http_200_completions": 0,
+      "failed_http_attempts": 0,
+      "retry_attempts": 0,
+      "uncompleted_requests": 0,
+      "observations": 1,
+      "tool_calls": 0,
+      "motion_commands": 0,
+      "sdk_control_steps": 0,
+      "sdk_readbacks": 0,
+      "responses_with_usage": 0,
+      "responses_missing_usage": 0,
+      "reported_cost_usd": null,
+      "input_uncached": null,
+      "cache_write": null,
+      "cache_read": null,
+      "input_total": null,
+      "output": null,
+      "thinking": null,
+      "tokens_total": null,
+      "cost_usd": null
+    },
+    "RESTORE": {
+      "http_attempts": 4,
+      "logical_requests": 3,
+      "http_200_completions": 2,
+      "failed_http_attempts": 2,
+      "retry_attempts": 1,
+      "uncompleted_requests": 0,
+      "observations": 2,
+      "tool_calls": 2,
+      "motion_commands": 2,
+      "sdk_control_steps": 247,
+      "sdk_readbacks": 247,
+      "responses_with_usage": 2,
+      "responses_missing_usage": 2,
+      "reported_cost_usd": 0.0334356,
+      "input_uncached": null,
+      "cache_write": null,
+      "cache_read": null,
+      "input_total": null,
+      "output": null,
+      "thinking": null,
+      "tokens_total": null,
+      "cost_usd": null
+    }
+  },
+  "request_events": 33,
+  "captured_http_attempts": 33,
+  "uncompleted_http_requests": 0,
+  "cost_rates_usd_per_million": {
+    "input": 4,
+    "cache_write_5m": 5,
+    "cache_write_1h": 8,
+    "cache_read": 0.2,
+    "output": 20
+  },
+  "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+  "cost_note": "List-price estimate from returned API usage; not an invoice. Preparation excluded. Failed or uncompleted requests without usage have unknown billing.",
+  "token_note": "Anthropic input_tokens excludes cache creation/read. Thinking is a subset of output; never added twice. Missing API fields remain null.",
+  "video_note": "Framework replay contains sampled action frames; its playback duration is not onsite wall time.",
+  "initialization_note": "Events before goal_and_initial_observation_received are accounted as INIT, including the initial read-only camera check.",
+  "termination": {
+    "monotonic_ns": 1836757740192419,
+    "utc": "2026-09-24T10:15:59.497992+00:00",
+    "event_id": 2663,
+    "phase": "RESTORE",
+    "kind": "framework_end",
+    "status": "error",
+    "error": "all 1 trial(s) errored; nothing was scored"
+  },
+  "administrative_recovery_commands": [
+    {
+      "id": "001_observe.json",
+      "command": {
+        "op": "observe"
+      },
+      "reply": {
+        "ok": true,
+        "observation": {
+          "monotonic_ns": 1836866270051911,
+          "utc": "2026-09-24T10:17:48.027852+00:00",
+          "seq": 25,
+          "phase": "ADMIN_RECOVERY",
+          "env_step": 1251,
+          "state": [
+            -0.17185497283935547,
+            0.6044483184814453,
+            0.6025409698486328,
+            -0.4072256088256836,
+            0.00057220458984375,
+            -0.00400543212890625,
+            0.9803920745849609
+          ],
+          "commanded": [
+            -0.17,
+            0.6,
+            0.6,
+            -0.45,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "measured_geometry": {
+            "ee_xyz": [
+              0.0369,
+              -0.0234,
+              0.1111
+            ],
+            "ee_rpy": [
+              -0.004,
+              0.409,
+              -0.172
+            ],
+            "tip_xyz": [
+              0.2086,
+              -0.0533,
+              0.0355
+            ],
+            "ee_above_table": 0.2746,
+            "tip_above_table": 0.199
+          },
+          "commanded_geometry": {
+            "ee_xyz": [
+              0.0346,
+              -0.0227,
+              0.107
+            ],
+            "ee_rpy": [
+              -0.0,
+              0.45,
+              -0.17
+            ],
+            "tip_xyz": [
+              0.2032,
+              -0.0516,
+              0.0244
+            ],
+            "ee_above_table": 0.2705,
+            "tip_above_table": 0.1879
+          },
+          "images": {
+            "fixed": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000025_fixed.png",
+            "wrist": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000025_wrist.png"
+          }
+        }
+      }
+    },
+    {
+      "id": "002_fold.json",
+      "command": {
+        "op": "move_joints",
+        "targets": {
+          "left_j0": 0.0,
+          "left_j1": 0.0,
+          "left_j2": 0.0,
+          "left_j3": 0.0,
+          "left_j4": 0.0,
+          "left_j5": 0.0
+        },
+        "note": "User requested home after task; Codex reviewed observation25 (cube stable in plate; arm high and half folded). Explicit final fold with existing raw/predicted geometry precheck and unchanged speed."
+      },
+      "reply": {
+        "ok": true,
+        "error": null,
+        "note": "executing move_joints over 151 steps (7.5s)",
+        "observation": {
+          "monotonic_ns": 1836987070769601,
+          "utc": "2026-09-24T10:19:48.828569+00:00",
+          "seq": 26,
+          "phase": "ADMIN_RECOVERY",
+          "env_step": 1402,
+          "state": [
+            -0.00438690185546875,
+            0.00591278076171875,
+            0.02193450927734375,
+            0.042534828186035156,
+            0.00019073486328125,
+            -0.00400543212890625,
+            0.9803920745849609
+          ],
+          "commanded": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "measured_geometry": {
+            "ee_xyz": [
+              -0.0012,
+              -0.0004,
+              0.0111
+            ],
+            "ee_rpy": [
+              -0.004,
+              -0.059,
+              -0.005
+            ],
+            "tip_xyz": [
+              0.1885,
+              -0.0013,
+              0.0223
+            ],
+            "ee_above_table": 0.1746,
+            "tip_above_table": 0.1858
+          },
+          "commanded_geometry": {
+            "ee_xyz": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "ee_rpy": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "tip_xyz": [
+              0.19,
+              0.0,
+              0.0
+            ],
+            "ee_above_table": 0.1635,
+            "tip_above_table": 0.1635
+          },
+          "images": {
+            "fixed": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000026_fixed.png",
+            "wrist": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000026_wrist.png"
+          }
+        }
+      }
+    },
+    {
+      "id": "003_close_empty_gripper.json",
+      "command": {
+        "op": "move_joints",
+        "targets": {
+          "left_gripper": 0.0
+        },
+        "note": "Final fold readback is within0.1rad; wrist image26 shows empty jaws. Close empty gripper at home, keeping six joint targets0."
+      },
+      "reply": {
+        "ok": true,
+        "error": null,
+        "note": "executing move_joints over 63 steps (3.1s)",
+        "observation": {
+          "monotonic_ns": 1837206492313586,
+          "utc": "2026-09-24T10:23:28.250113+00:00",
+          "seq": 27,
+          "phase": "ADMIN_RECOVERY",
+          "env_step": 1465,
+          "state": [
+            -0.00171661376953125,
+            0.00438690185546875,
+            0.02155303955078125,
+            0.042916297912597656,
+            0.00019073486328125,
+            -0.00400543212890625,
+            0.00091552734375
+          ],
+          "commanded": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "measured_geometry": {
+            "ee_xyz": [
+              -0.0012,
+              -0.0002,
+              0.0112
+            ],
+            "ee_rpy": [
+              -0.004,
+              -0.06,
+              -0.002
+            ],
+            "tip_xyz": [
+              0.1884,
+              -0.0005,
+              0.0226
+            ],
+            "ee_above_table": 0.1747,
+            "tip_above_table": 0.1861
+          },
+          "commanded_geometry": {
+            "ee_xyz": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "ee_rpy": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "tip_xyz": [
+              0.19,
+              0.0,
+              0.0
+            ],
+            "ee_above_table": 0.1635,
+            "tip_above_table": 0.1635
+          },
+          "images": {
+            "fixed": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000027_fixed.png",
+            "wrist": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000027_wrist.png"
+          }
+        }
+      }
+    },
+    {
+      "id": "004_release_sdk.json",
+      "command": {
+        "op": "close"
+      },
+      "reply": {
+        "ok": true,
+        "reason": "close only from folded posture"
+      }
+    }
+  ]
+}

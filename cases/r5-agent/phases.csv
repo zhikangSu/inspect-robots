@@ -1,0 +1,5 @@
+phase,http_attempts,logical_requests,http_200_completions,failed_http_attempts,retry_attempts,uncompleted_requests,observations,tool_calls,motion_commands,sdk_control_steps,sdk_readbacks,responses_with_usage,responses_missing_usage,reported_cost_usd,input_uncached,cache_write,cache_read,input_total,output,thinking,tokens_total,cost_usd
+A,29,29,29,0,0,0,21,30,19,1004,1004,29,0,0.4741934,100,43544,637367,681011,6430,1925,687441,0.4741934
+ADMIN_RECOVERY,0,0,0,0,0,0,3,0,2,214,214,0,0,,,,,,,,,
+INIT,0,0,0,0,0,0,1,0,0,0,0,0,0,,,,,,,,,
+RESTORE,4,3,2,2,1,0,2,2,2,247,247,2,2,0.0334356,,,,,,,,

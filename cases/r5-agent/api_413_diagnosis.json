@@ -1,0 +1,13 @@
+{
+  "http_status": 413,
+  "actual_request_body_bytes_reconstructed": 34658807,
+  "MiB": 33.05321407318115,
+  "response": {
+    "error": {
+      "type": "request_too_large",
+      "message": "Request exceeds the maximum size"
+    }
+  },
+  "request_image_occurrences": 46,
+  "cause": "full image history accumulated in request; no truncation configured in frozen run"
+}

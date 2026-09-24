@@ -1,0 +1,86 @@
+{
+  "observation": {
+    "monotonic_ns": 1835610520774463,
+    "utc": "2026-09-24T09:56:52.278576+00:00",
+    "seq": 1,
+    "phase": "A",
+    "env_step": 0,
+    "state": [
+      -0.00019073486328125,
+      -0.00400543212890625,
+      0.02079010009765625,
+      0.056649208068847656,
+      0.00019073486328125,
+      -0.01697540283203125,
+      -0.00030517578125
+    ],
+    "commanded": [
+      -0.00019073486328125,
+      -0.00400543212890625,
+      0.02079010009765625,
+      0.056649208068847656,
+      0.00019073486328125,
+      -0.01697540283203125,
+      -0.00030517578125
+    ],
+    "measured_geometry": {
+      "ee_xyz": [
+        -0.0019,
+        -0.0,
+        0.0129
+      ],
+      "ee_rpy": [
+        -0.017,
+        -0.081,
+        -0.0
+      ],
+      "tip_xyz": [
+        0.1875,
+        -0.0001,
+        0.0283
+      ],
+      "ee_above_table": 0.1764,
+      "tip_above_table": 0.1918
+    },
+    "commanded_geometry": {
+      "ee_xyz": [
+        -0.0019,
+        -0.0,
+        0.0129
+      ],
+      "ee_rpy": [
+        -0.017,
+        -0.081,
+        -0.0
+      ],
+      "tip_xyz": [
+        0.1875,
+        -0.0001,
+        0.0283
+      ],
+      "ee_above_table": 0.1764,
+      "tip_above_table": 0.1918
+    },
+    "images": {
+      "fixed": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000001_fixed.png",
+      "wrist": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000001_wrist.png"
+    }
+  },
+  "reviewer": "Codex coordinator",
+  "scene": "cube visibly on tabletop left of blue plate in fixed view; plate empty",
+  "fixed_cube_bbox_xyxy": [
+    145,
+    188,
+    195,
+    238
+  ],
+  "fixed_plate_bbox_xyxy": [
+    242,
+    157,
+    387,
+    277
+  ],
+  "start_posture": "observed folded; use frozen fold tolerance for final posture",
+  "A_only": true,
+  "safety_confirmation": "../safety_confirmation.json"
+}

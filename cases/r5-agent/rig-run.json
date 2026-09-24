@@ -1,0 +1,86 @@
+{
+  "monotonic_ns": 1835604229305053,
+  "utc": "2026-09-24T09:56:45.987111+00:00",
+  "pid": 2721966,
+  "fake": false,
+  "model": "claude-opus-5-5",
+  "policy": "agent",
+  "cfg": {
+    "arms": "left",
+    "left_can": "can1",
+    "right_can": "can3",
+    "arm_type": 0,
+    "sdk_path": null,
+    "control_hz": 20,
+    "joint_low": [
+      -1.1,
+      -0.05,
+      -0.05,
+      -1.3,
+      -0.7,
+      -1.2
+    ],
+    "joint_high": [
+      0.3,
+      2.2,
+      1.7,
+      0.8,
+      0.4,
+      0.5
+    ],
+    "joint_max_step": 0.05,
+    "gripper_closed": 0.0,
+    "gripper_open": 5.0,
+    "gripper_max_step": 0.2,
+    "home_joints": [
+      -0.35,
+      1.2,
+      1.2,
+      -0.9,
+      0.0,
+      0.0
+    ],
+    "home_gripper": 1.0,
+    "rest_joints": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rest_gripper": 0.0,
+    "ramp_secs": 6,
+    "cameras": "fixed:/dev/video4,wrist:/dev/video10",
+    "cam_width": 640,
+    "cam_height": 480,
+    "unattended": true,
+    "auto_start": false,
+    "park_before_grade": false,
+    "docs_extra": "",
+    "camera_devices": {
+      "fixed": "/dev/video4",
+      "wrist": "/dev/video10"
+    }
+  },
+  "task": "single A plus explicitly separated safe restoration",
+  "phase_limit_s": 1800,
+  "source_sha256": {
+    "/home/meow/R5/inspect_opus_run.py": "8d8578e5438498b5f1751c432ba7be17fc73136a20d6687453d195f319959ca1",
+    "/home/meow/R5/opus55_r5_protocol.md": "40adb104fb5c12711e3040ed7d51ffaae19b8d34b5309da95e675c962dcec5d2",
+    "/home/meow/R5/inspect_codex_run.py": "a00f1e5d62d743b16d354ded346b00fa12870453dee66ef0fc67a2f4f88d9aa3",
+    "/home/meow/R5/claude_cmd.py": "8b62867c70aba1b17eaa212b17256e1ffd0eca3bcc07871338c93a709831fc28",
+    "/home/meow/R5/claude_servo.py": "3d9767ff12fc7f4fbaeb62d015a8bce9123b9335a14483e03e8de1d9e1ed5688",
+    "/home/meow/R5/r5_kin.py": "8feac0149871e1cfa15fd8349de2b3704f3a698325157b592def666813babc7d",
+    "/home/meow/R5/inspect_r5.ini": "d555b993658337fc154d1bd55bc991ebfa4fd728b2ab108cf5615384672f175d",
+    "/home/meow/R5/inspect_env.sh": "279e5f70e4152f5379882b9e26431f1855c703e4caa5da8a5a7b834561e1f3a1",
+    "/home/meow/R5/inspect_claude_driver/src/inspect_claude_driver/policy.py": "bd23b385ebf9efc7f388d0a2396232636a93806dad448ff98fb666090688abbe"
+  },
+  "customizations": [
+    "R5 math/visual-checkpoint tools",
+    "commanded interpolation anchor; real measured state remains in model observation",
+    "existing target/predicted geometry precheck",
+    "no-motion stop and explicit observation refresh",
+    "same-owner administrative recovery after ended eval"
+  ]
+}

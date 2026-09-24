@@ -1,0 +1,67 @@
+{
+  "monotonic_ns": 1836987070769601,
+  "utc": "2026-09-24T10:19:48.828569+00:00",
+  "seq": 26,
+  "phase": "ADMIN_RECOVERY",
+  "env_step": 1402,
+  "state": [
+    -0.00438690185546875,
+    0.00591278076171875,
+    0.02193450927734375,
+    0.042534828186035156,
+    0.00019073486328125,
+    -0.00400543212890625,
+    0.9803920745849609
+  ],
+  "commanded": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+  ],
+  "measured_geometry": {
+    "ee_xyz": [
+      -0.0012,
+      -0.0004,
+      0.0111
+    ],
+    "ee_rpy": [
+      -0.004,
+      -0.059,
+      -0.005
+    ],
+    "tip_xyz": [
+      0.1885,
+      -0.0013,
+      0.0223
+    ],
+    "ee_above_table": 0.1746,
+    "tip_above_table": 0.1858
+  },
+  "commanded_geometry": {
+    "ee_xyz": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ee_rpy": [
+      -0.0,
+      -0.0,
+      0.0
+    ],
+    "tip_xyz": [
+      0.19,
+      0.0,
+      0.0
+    ],
+    "ee_above_table": 0.1635,
+    "tip_above_table": 0.1635
+  },
+  "images": {
+    "fixed": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000026_fixed.png",
+    "wrist": "/home/meow/R5/logs/opus55_api_20260924_173157/real_01/observations/000026_wrist.png"
+  }
+}

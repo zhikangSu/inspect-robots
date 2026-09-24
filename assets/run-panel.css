@@ -46,10 +46,10 @@ main p, main ul, main ol { max-width: 70ch; }
 .ev button:focus-visible, .turn-bar button:focus-visible, #wire-dialog button:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; }
 .warn { background: var(--safety-soft); border-left: 3px solid var(--safety); padding: 6px 10px; }
 
-.kv { display: grid; gap: 6px; margin: 10px 0; }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 10px 0; }
 .kv > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 10px; }
 .kv dt { color: var(--ink-3); font-size: 12.5px; }
-.kv dd { margin: 0; }
+.kv dd { margin: 0; min-width: 0; }
 
 .ev pre.json, #wire-dialog pre.json { background: var(--code-bg); color: var(--code-ink); font: 11.5px/1.55 "JetBrains Mono", ui-monospace, Menlo, monospace; padding: 10px 12px; border-radius: 6px; max-height: 340px; overflow: auto; white-space: pre; margin: 6px 0; }
 .ev-fold { margin: 10px 0 4px; max-width: none; }

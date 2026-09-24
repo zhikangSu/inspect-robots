@@ -1,0 +1,50 @@
+{
+  "utc": "2026-09-24T10:12:21.210250+00:00",
+  "monotonic_ns": 1836539452470573,
+  "reviewer": "Codex coordinator independent visual review",
+  "A_success": true,
+  "attempts": 1,
+  "first_attempt_success": true,
+  "task_human_intervention": false,
+  "task_coordinator_control_intervention": false,
+  "regrasp_count": 0,
+  "unintended_drops": 0,
+  "finding": "After open-gripper release and upward withdrawal, cube is upright and fully inside the blue plate in both fixed and wrist images at observations 21 and 22. Its location remains unchanged across these observations.",
+  "evidence": [
+    "observations/000021_fixed.png",
+    "observations/000021_wrist.png",
+    "observations/000022_fixed.png",
+    "observations/000022_wrist.png"
+  ],
+  "stability_interval_s": 19.26981507,
+  "grasp_evidence": [
+    "observations/000015_fixed.png",
+    "observations/000015_wrist.png"
+  ],
+  "restoration_review": {
+    "success": true,
+    "actor": "Codex coordinator via same SDK owner",
+    "API_autonomous_restoration_complete": false,
+    "reason": "API write timeout retried, then HTTP413 request too large at observation24; explicit final fold and empty-gripper closure authorized by user",
+    "final_joint_state": [
+      -0.00171661376953125,
+      0.00438690185546875,
+      0.02155303955078125,
+      0.042916297912597656,
+      0.00019073486328125,
+      -0.00400543212890625,
+      0.00091552734375
+    ],
+    "fold_tolerance_rad": 0.1,
+    "evidence": [
+      "observations/000026_fixed.png",
+      "observations/000026_wrist.png",
+      "observations/000027_fixed.png",
+      "observations/000027_wrist.png"
+    ],
+    "human_physical_intervention": false,
+    "coordinator_control_intervention": true,
+    "final_home_monotonic_ns": 1837206492313586,
+    "final_home_utc": "2026-09-24T10:23:28.250113+00:00"
+  }
+}

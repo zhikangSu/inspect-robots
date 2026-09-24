@@ -1,0 +1,10 @@
+{
+  "inspect-robots": "0.58.1.dev2+gbb6495fe2",
+  "inspect-robots-agent": "0.26.0",
+  "inspect-robots-arx-r5": "0.1.0",
+  "numpy": "2.2.6",
+  "httpx": "0.28.1",
+  "framework_commit": "bb6495fe24432485246a108be0858d2f46e3475e",
+  "framework_dirty": "",
+  "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]"
+}

@@ -1,0 +1,1 @@
+{"op": "move_joints", "targets": {"left_j0": 0.0, "left_j1": 0.0, "left_j2": 0.0, "left_j3": 0.0, "left_j4": 0.0, "left_j5": 0.0}, "note": "User requested home after task; Codex reviewed observation25 (cube stable in plate; arm high and half folded). Explicit final fold with existing raw/predicted geometry precheck and unchanged speed."}
