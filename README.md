@@ -1,36 +1,66 @@
-# Inspect Robots 控制回路解剖（网页源码）
+# Inspect Robots：语言模型怎样控制机器人（网页源码）
 
 这个分支是 GitHub Pages 站点 https://zhikangsu.github.io/inspect-robots/ 的全部内容。
+
+页面按一次运行的先后顺序讲 12 步。每一步左边是讲解，右边是一次真实运行里对应的记录：发给模型的原始请求、模型的回复和工具调用、拆成的小步、执行结果。
 
 ## 文件
 
 | 文件 | 作用 |
 |---|---|
-| `index.html` | 页面正文、原有图解与样式，也是发布出去的首页。R5 案例的说明和入口也在这里。 |
-| `assets/r5-case.css` / `assets/r5-case.js` | R5 实例的响应式浏览器、原图放大、回放定位与观测联动；不连接机器人。 |
-| `cases/r5-cube/` | 2026-09-19 实机案例：41 组双路原图、7 张深度可视化、两路视频、数据与来源校验值。 |
-| `tools/export_r5_case.py` | 从这次本地运行记录导出网页案例；只发布明确选定的字段，不复制本机路径。 |
-| `tools/embed_snippets.py` | 把页面里源码链接指向的代码片段抽出来嵌进 `index.html` 底部，并加上右侧抽屉。 |
+| `index.html` | 页面正文和样式，也是发布出去的首页。左边的讲解都写在这里。 |
+| `assets/run-panel.js` / `assets/run-panel.css` | 右边各步的内容：读取运行记录，按步骤和回合显示；还有完整请求查看器和 token 用量图。只读数据，不连接机器人。 |
+| `cases/r5-agent/` | 右边用的那次运行（ARX R5 左臂，语言模型插件），由下面的导出工具生成。 |
+| `tools/export_agent_run.py` | 把一次 `--policy agent` 运行的日志目录导出成 `cases/<名字>/`。 |
+| `tools/embed_snippets.py` | 把页面里源码链接指向的代码片段抽出来嵌进 `index.html` 底部，并加上源码抽屉。 |
 | `annotations/source.zh-CN.json` | 68 个源码/设计文档片段的中文解读，按文件与行号范围维护；含原文哈希和注释锚点。 |
 | `assets/source-drawer.css` / `assets/source-drawer.js` | 源码抽屉的注释/原文切换、语法着色与键盘交互；由生成工具嵌入首页。 |
+| `tools/preview.py` | 本地预览服务器，支持视频拖动所需的 HTTP Range。 |
+| `cases/r5-cube/`、`tools/export_r5_case.py` | 旧的一次 Codex 运行记录（通过文件做决定，没有模型 API 请求）。页面不再展示，只作存档。 |
 | `.nojekyll` | 让 GitHub Pages 原样发布，不走 Jekyll。 |
 
-## 怎么改
+## 页面结构
 
-改文字、表格、图：直接编辑 `index.html`，提交推送即可，几十秒后生效。
+- `<nav class="toc">` 是左侧目录，`<main>` 是正文。`<div class="page" data-run="cases/r5-agent/">` 的 `data-run` 决定右边读哪次运行。
+- 每一步是一个 `<article class="step" id="sN">`：`div.explain` 是左边的讲解（标题、正文、`div.why`、折叠的“对应代码”），`aside.ev` 是右边，里面的 `div#ev-sN` 由 `run-panel.js` 填充。
+- 第 6–9 步放在 `.turn-scope` 里，上方的回合选择条固定在顶部，切换回合时这四步的右边一起更新。`#turn-5` 这样的链接可以直接打开某个回合。
+- “出问题时怎么办”的每张卡片有 `data-branch`，脚本会在卡片最后写上这次运行里有没有出现过、出现在哪几个回合。
+- 颜色用 CSS 变量：`--model`（蓝，语言模型和模型插件）、`--safety`（橙，安全检查）、`--robot`（青绿，机器人插件），灰色是框架。token 图用 `--series-1/2/3`（已用配色检查脚本验证过亮暗两种背景）。
 
-页面的结构：
+## 换一次运行
 
-- `<style>` 里是全部样式。颜色用 CSS 变量，`--model`（蓝，模型侧）、`--safety`（橙，安全检查）、`--robot`（青绿，机器人侧），亮暗两套主题都在里面。
-- `<nav class="toc">` 是左侧目录，`<main>` 是正文。正文按三个阶段（`#phase1` `#phase2` `#phase3`）组织，每一步是一个 `<article class="step" id="sN">`，里面依次是标题、"发生什么"段落、`div.why`（为什么这样设计）、`details`（对应代码）。
-- `#r5-case` 把 R5 实机记录对应到前文 12 步；`#r5-obs-33` 这类链接可以直达一组观测。浏览器只读取静态 JSON 和媒体文件。
-- 每个源码链接长这样：
+1. 用语言模型插件跑一次，保持默认的请求记录（`wire_capture`）打开，建议加 `--store-frames`：
 
-  ```html
-  <a class="src" href="https://github.com/robocurve/inspect-robots/blob/7e4d1b7aee1c0d3cfc3a05a7492b9d12cda666f9/src/inspect_robots/rollout.py#L325">rollout.py:325 主循环开始</a>
-  ```
+   ```bash
+   inspect-robots "..." --policy agent -P model=anthropic/claude-sonnet-5 -P wire=messages --store-frames --log-dir LOG_DIR
+   ```
 
-  `href` 必须是固定到提交 `7e4d1b7` 的 blob 地址，带 `#L起始` 或 `#L起始-L结束`。运行下面的脚本后它会自动获得 `data-snip="sN"`，点击时右侧抽屉显示对应代码。
+2. 如果要在页面里放回放视频，在有 ffmpeg 的机器上生成：
+
+   ```bash
+   inspect-robots video LOG_DIR/<日志文件>.json --out LOG_DIR/video
+   ```
+
+3. 导出（需要 macOS 的 `sips` 把图片转成 JPEG；没有时会直接复制 PNG）：
+
+   ```bash
+   python3 tools/export_agent_run.py LOG_DIR cases/<名字> --video LOG_DIR/video --rig rig.json
+   ```
+
+   `rig.json` 可选，写日志里没有记录的机器人设置，例如 `{"joint_max_step": 0.1, "gripper_max_step": 0.2}`，用于第 4 步显示每小步的上限。
+
+4. 把 `index.html` 里的 `data-run` 改成 `cases/<名字>/`。不改的话，也可以用 `?run=cases/<名字>/` 临时预览。
+
+导出结果：`run.json` 是右边读取的整理结果；`wire.json` 是每一次请求和回复的原文（图片换成了 `img/` 里的文件）；`eval-log.json` 是去掉本机路径后的主日志；`actions.jsonl` 是每一小步发出的数值。请求记录只有请求体，没有请求头，所以不含 API key。
+
+## 用词约定
+
+页面面向第一次接触这个项目的人，正文用平常的说法，代码名只放在折叠的“对应代码”和最后的对照表里。
+
+- 五个部分固定这样叫：语言模型、模型插件、框架、安全检查、机器人插件。不要再用“模型侧”泛指模型插件的代码。
+- 常用词：观测（关节位置加相机画面）、回合（问一次模型并走完它的动作）、小步（拆分后的每一步）、操作（模型能用的移动、拍照、完成、放弃）。
+- 不用比喻，不写“X 是兜底，不是常态”这类总结句，也不写“不能把 A 当作 B”“这不表示……”这类防御式声明。需要说明的限制，直接写事实，一句就够。
+- 右边保留英文原文，旁边配中文。固定英文句子（系统提示、工具描述、框架回复）的中文写在 `assets/run-panel.js` 的 `ZH` 表里，按整句匹配；模型自己写的内容不翻译。
 
 ## 新增或修改源码链接后
 
@@ -41,42 +71,20 @@ git clone https://github.com/zhikangSu/inspect-robots ../inspect-robots-src   # 
 INSPECT_ROBOTS_REPO=../inspect-robots-src python3 tools/embed_snippets.py index.html
 ```
 
-脚本是幂等的：它先删掉旧的抽屉样式、JSON 和脚本，再按当前页面里的链接重新生成，并重建 `data-snip` 映射。只给了起始行的链接，它会自动找到代码块的结尾（最多 170 行）；给了 `#L起始-L结束` 就按给定范围抽取。Markdown 标题锚点会定位对应章节，目录链接不会嵌片段。
+脚本是幂等的：它先删掉旧的抽屉样式、JSON 和脚本，再按当前页面里的链接重新生成，并重建 `data-snip` 映射。只给了起始行的链接，它会自动找到代码块的结尾（最多 170 行）；给了 `#L起始-L结束` 就按给定范围抽取。
 
-抽屉默认显示“中文注释”：先解释片段负责什么、输入和产出，再在原代码块之间插入中文说明。注释行用 `#` 和“中文解读”标识，不占用 GitHub 原始行号；可切换“原始代码”核对。
-
-修改中文说明时编辑 `annotations/source.zh-CN.json`，然后重新生成首页。每个片段必须包含用途、输入、产出、例子与分段注释。生成器检查源码 SHA-256、注释行号范围和对应原文锚点；新增链接缺少注释、固定版本改变或锚点错位时会停止，而不是发布失配的解释。阅读注释不修改上游源码，也不进入实际机器人控制路径。
+每个源码链接都要在 `annotations/source.zh-CN.json` 里有对应的中文注释（用途、输入、产出、例子与分段注释）。生成器检查源码 SHA-256、注释行号范围和对应原文锚点；缺注释、固定版本改变或锚点错位时会停止。
 
 ## 不要动的部分
 
 - 页面底部 `<!-- source drawer -->` 之后的内容全部由脚本生成，手改会在下次运行时被覆盖。
 - `<style>` 里 `/* ---- source drawer ---- */` 到 `</style>` 之间同理。
-- 把链接换到别的提交时，要同时改脚本与注释文件里的提交号，并逐段重审原文、哈希、行号和中文解释。不能只更新哈希跳过语义复核。
+- 把源码链接换到别的提交时，要同时改脚本与注释文件里的提交号，并逐段重审原文、哈希、行号和中文解释。
 
-## R5 实例的图像与数据
-
-`cases/r5-cube/annotations.json` 是按原始动作记录整理的中文阅读提示。
-`data.json` 保存每次进入策略的读回状态、下一条指令、切分结果、图像索引与时间。
-这两个时点不可交换：观察 N 对应指令 N 执行之前，执行结果应看观察 N+1。
-
-相机图以无损 WebP 保存，导出器逐张比较解码后的 RGB 像素与源 PNG。
-`thumbs/` 是单独缩小的导航图，`images/` 保留 640×480 原尺寸。
-深度图是 5–35 cm 固定色标的派生可视化；额外深度核验只发生在 7 次观察附近。
-视频按保存帧 20 fps 合成，77.75 秒不等于约 13 分 52 秒的现场运行时间。
-
-本次使用文件信箱策略（注册名沿用 `claude`，由当前 Codex 会话决策），并非独立模型 API 调用。
-物理成功来自两路图像与撤离后照片；原评测只启用了 `episode_length`，没有自动成功评分。
-因此不能把 41 组观测写成 API 调用次数，也不能把框架 `status=success` 当作实物成功证据。
-
-重新导出这一次案例（需要 Pillow、numpy）：
+## 本地预览
 
 ```bash
-python tools/export_r5_case.py /path/to/codex_cube_20260919_run3
-python tools/preview.py --port 8765
+python3 tools/preview.py --port 8765
 ```
 
-打开 `http://127.0.0.1:8765/#r5-case`。应检查全部 41 组图片、上一组/下一组、
-阶段跳转、末组禁用、深度折叠区、原图弹窗、视频时间定位与相机切换、手机布局，
-同时确认原源码抽屉仍可用。导出器针对这次已核验的 episode；新增实验应建立独立案例及对应说明。
-
-本地预览使用 tools/preview.py，它支持浏览器定位 MP4 所需的 HTTP Range。普通 python -m http.server 可以看页面和图片，但可能无法在 Chrome 中跳转视频时间。
+打开 `http://127.0.0.1:8765/`。普通 `python -m http.server` 也能看页面，但 Chrome 里可能无法拖动视频。
